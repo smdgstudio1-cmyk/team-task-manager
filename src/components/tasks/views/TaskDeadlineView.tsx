@@ -8,7 +8,7 @@ function Group({ title, tasks, onOpenTask, tint }: { title: string; tasks: Task[
   if (tasks.length === 0) return null
   return (
     <div>
-      <p className={`mb-2 text-xs font-semibold uppercase tracking-wide ${tint || 'text-ink-400'}`}>
+      <p className={`mb-2 text-sm font-semibold ${tint || 'text-ink-500'}`}>
         {title} ({tasks.length})
       </p>
       <div className="space-y-2">

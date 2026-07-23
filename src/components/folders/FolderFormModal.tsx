@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
-import { Input, Textarea, FieldWrap } from '@/components/ui/Field'
+import { Input, Textarea, Select, FieldWrap } from '@/components/ui/Field'
 import { useDataStore } from '@/store/dataStore'
 import type { Folder } from '@/lib/types'
 
@@ -15,20 +15,25 @@ export function FolderFormModal({
   open: boolean
   onClose: () => void
   folder?: Folder | null
-  ownerId?: string
+  ownerId?: string | null
   parentFolderId?: string | null
 }) {
   const createFolder = useDataStore((s) => s.createFolder)
   const updateFolder = useDataStore((s) => s.updateFolder)
+  const teamMembers = useDataStore((s) => s.teamMembers).filter((m) => !m.archived)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [owner, setOwner] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  const isSubfolder = Boolean(parentFolderId)
 
   useEffect(() => {
     if (!open) return
     setName(folder?.name || '')
     setDescription(folder?.description || '')
-  }, [open, folder])
+    setOwner(ownerId || '')
+  }, [open, folder, ownerId])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -36,11 +41,11 @@ export function FolderFormModal({
     setSubmitting(true)
     if (folder) {
       await updateFolder(folder.id, { name: name.trim(), description: description.trim() || null })
-    } else if (ownerId) {
+    } else {
       await createFolder({
         name: name.trim(),
         description: description.trim() || null,
-        owner_id: ownerId,
+        owner_id: isSubfolder ? ownerId ?? null : owner || null,
         parent_folder_id: parentFolderId ?? null,
       })
     }
@@ -59,6 +64,18 @@ export function FolderFormModal({
         <FieldWrap label="Description (optional)">
           <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} placeholder="What's this for?" />
         </FieldWrap>
+        {!folder && !isSubfolder && (
+          <FieldWrap label="Team member (optional)">
+            <Select value={owner} onChange={(e) => setOwner(e.target.value)}>
+              <option value="">General project — no single owner</option>
+              {teamMembers.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </Select>
+          </FieldWrap>
+        )}
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel

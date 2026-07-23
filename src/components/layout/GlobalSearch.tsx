@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Search, FolderKanban, ListChecks, X } from 'lucide-react'
 import { useDataStore } from '@/store/dataStore'
-import { useAuthStore } from '@/store/authStore'
 import { useNavigate } from 'react-router-dom'
 import { StatusBadge } from '@/components/ui/Badge'
 
@@ -10,23 +9,16 @@ export function GlobalSearch() {
   const [query, setQuery] = useState('')
   const tasks = useDataStore((s) => s.tasks)
   const folders = useDataStore((s) => s.folders)
-  const profiles = useDataStore((s) => s.profiles)
-  const profile = useAuthStore((s) => s.profile)
   const navigate = useNavigate()
-
-  const visibleFolders = profile?.role === 'admin' ? folders : folders.filter((f) => f.owner_id === profile?.id)
-  const visibleTasks =
-    profile?.role === 'admin' ? tasks : tasks.filter((t) => t.assigned_user_id === profile?.id || visibleFolders.some((f) => f.id === t.folder_id))
 
   const results = useMemo(() => {
     if (!query.trim()) return { folders: [], tasks: [] }
     const q = query.toLowerCase()
     return {
-      folders: visibleFolders.filter((f) => f.name.toLowerCase().includes(q)).slice(0, 6),
-      tasks: visibleTasks.filter((t) => t.title.toLowerCase().includes(q)).slice(0, 8),
+      folders: folders.filter((f) => f.name.toLowerCase().includes(q)).slice(0, 6),
+      tasks: tasks.filter((t) => t.title.toLowerCase().includes(q)).slice(0, 8),
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, folders, tasks, profile])
+  }, [query, folders, tasks])
 
   function close() {
     setOpen(false)
@@ -68,7 +60,7 @@ export function GlobalSearch() {
               )}
               {results.folders.length > 0 && (
                 <div className="mb-2">
-                  <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wide text-ink-400">Folders</p>
+                  <p className="px-3 py-1 text-xs font-semibold text-ink-400">Folders</p>
                   {results.folders.map((f) => (
                     <button
                       key={f.id}
@@ -86,7 +78,7 @@ export function GlobalSearch() {
               )}
               {results.tasks.length > 0 && (
                 <div>
-                  <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wide text-ink-400">Tasks</p>
+                  <p className="px-3 py-1 text-xs font-semibold text-ink-400">Tasks</p>
                   {results.tasks.map((t) => (
                     <button
                       key={t.id}
@@ -105,7 +97,6 @@ export function GlobalSearch() {
                   ))}
                 </div>
               )}
-              {profiles.length === 0 && null}
             </div>
           </div>
         </div>

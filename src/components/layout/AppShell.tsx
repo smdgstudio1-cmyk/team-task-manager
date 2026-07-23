@@ -4,26 +4,16 @@ import { X } from 'lucide-react'
 import { SidebarContent } from './Sidebar'
 import { Topbar } from './Topbar'
 import { useDataStore } from '@/store/dataStore'
-import { useAuthStore } from '@/store/authStore'
 
 export function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const loadAll = useDataStore((s) => s.loadAll)
   const subscribeRealtime = useDataStore((s) => s.subscribeRealtime)
   const loaded = useDataStore((s) => s.loaded)
-  const generateDeadlineNotifications = useDataStore((s) => s.generateDeadlineNotifications)
-  const profile = useAuthStore((s) => s.profile)
 
   useEffect(() => {
     loadAll().then(() => subscribeRealtime())
   }, [loadAll, subscribeRealtime])
-
-  useEffect(() => {
-    if (loaded && profile) {
-      generateDeadlineNotifications(profile.id, profile.role === 'admin')
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, profile?.id])
 
   return (
     <div className="flex h-screen overflow-hidden bg-ink-50">

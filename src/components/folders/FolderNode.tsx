@@ -13,13 +13,11 @@ export function FolderNode({
   folders,
   tasks,
   depth,
-  canManage,
 }: {
   folder: Folder
   folders: Folder[]
   tasks: Task[]
   depth: number
-  canManage: boolean
 }) {
   const [expanded, setExpanded] = useState(depth === 0)
   const [addingSubfolder, setAddingSubfolder] = useState(false)
@@ -54,45 +52,48 @@ export function FolderNode({
           <FolderIcon size={16} className="shrink-0 text-brand-500" />
           <span className="truncate text-sm font-medium text-ink-800">{folder.name}</span>
           <span className="shrink-0 text-xs text-ink-400">{stats.active} active</span>
+          {stats.overdue > 0 && (
+            <span className="shrink-0 rounded-full bg-red-100 px-1.5 py-0.5 text-[11px] font-semibold text-red-700">
+              {stats.overdue} overdue
+            </span>
+          )}
         </button>
 
         <div className="hidden w-20 shrink-0 items-center sm:flex">
           <ProgressBar value={stats.progress} size="sm" />
         </div>
 
-        {canManage && (
-          <div className="hidden shrink-0 items-center gap-0.5 group-hover:flex">
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                setAddingSubfolder(true)
-              }}
-              className="rounded p-1 text-ink-400 hover:bg-ink-200 hover:text-ink-700"
-              title="Add subfolder"
-            >
-              <FolderPlus size={14} />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                setRenaming(true)
-              }}
-              className="rounded p-1 text-ink-400 hover:bg-ink-200 hover:text-ink-700"
-              title="Rename"
-            >
-              <Pencil size={14} />
-            </button>
-            <button onClick={handleDelete} className="rounded p-1 text-ink-400 hover:bg-red-100 hover:text-red-600" title="Delete">
-              <Trash2 size={14} />
-            </button>
-          </div>
-        )}
+        <div className="hidden shrink-0 items-center gap-0.5 group-hover:flex">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setAddingSubfolder(true)
+            }}
+            className="rounded p-1 text-ink-400 hover:bg-ink-200 hover:text-ink-700"
+            title="Add subfolder"
+          >
+            <FolderPlus size={14} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setRenaming(true)
+            }}
+            className="rounded p-1 text-ink-400 hover:bg-ink-200 hover:text-ink-700"
+            title="Rename"
+          >
+            <Pencil size={14} />
+          </button>
+          <button onClick={handleDelete} className="rounded p-1 text-ink-400 hover:bg-red-100 hover:text-red-600" title="Delete">
+            <Trash2 size={14} />
+          </button>
+        </div>
       </div>
 
       {expanded && children.length > 0 && (
         <div>
           {children.map((child) => (
-            <FolderNode key={child.id} folder={child} folders={folders} tasks={tasks} depth={depth + 1} canManage={canManage} />
+            <FolderNode key={child.id} folder={child} folders={folders} tasks={tasks} depth={depth + 1} />
           ))}
         </div>
       )}

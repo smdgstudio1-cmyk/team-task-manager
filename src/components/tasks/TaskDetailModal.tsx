@@ -16,14 +16,14 @@ export function TaskDetailModal({ taskId, onClose }: { taskId: string | null; on
   const [editing, setEditing] = useState(false)
   const tasks = useDataStore((s) => s.tasks)
   const folders = useDataStore((s) => s.folders)
-  const profiles = useDataStore((s) => s.profiles)
+  const teamMembers = useDataStore((s) => s.teamMembers)
   const updateTask = useDataStore((s) => s.updateTask)
   const deleteTask = useDataStore((s) => s.deleteTask)
 
   const task = tasks.find((t) => t.id === taskId)
   if (!task) return null
 
-  const assignee = profiles.find((p) => p.id === task.assigned_user_id)
+  const assignee = teamMembers.find((p) => p.id === task.assigned_user_id)
   const path = getFolderPath(task.folder_id, folders)
   const overdue = isOverdue(task)
 

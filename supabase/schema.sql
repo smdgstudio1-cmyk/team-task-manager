@@ -1,35 +1,77 @@
--- Team Task Manager — full schema
--- Run this once in your Supabase project's SQL Editor (Database → SQL Editor → New query).
+-- Lumen Studio — single-admin schema
+-- Run this once in your Supabase project's SQL Editor (Database → SQL Editor → New query)
+-- for a BRAND NEW project. If you already applied the original multi-user
+-- schema, use supabase/migrations/002_single_admin.sql instead.
 
 create extension if not exists "pgcrypto";
 
 -- ============================================================================
--- PROFILES
--- profiles.id is the app-facing user id, independent from auth.users.id so an
--- admin can create a "team member" placeholder before that person ever signs
--- up. When someone signs up with a matching email, their auth account gets
--- linked to the existing profile instead of creating a duplicate.
+-- ADMIN IDENTITY
+-- Exactly one row: the studio manager's Supabase Auth account. Every RLS
+-- policy in this file checks against this single row — there is no
+-- multi-user auth system, no sign-up flow, and no roles to manage.
 -- ============================================================================
-create table public.profiles (
+create table public.admin_user (
   id uuid primary key default gen_random_uuid(),
-  auth_user_id uuid unique references auth.users(id) on delete set null,
-  name text not null,
-  email text not null unique,
-  avatar_url text,
-  role text not null default 'member' check (role in ('admin', 'member')),
+  auth_user_id uuid unique references auth.users(id) on delete cascade,
+  email text not null,
   created_at timestamptz not null default now()
 );
 
-create index profiles_auth_user_id_idx on public.profiles(auth_user_id);
+-- The first (and only) person to ever sign in becomes the admin.
+create function public.handle_new_admin_signup()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not exists (select 1 from public.admin_user) then
+    insert into public.admin_user (auth_user_id, email) values (new.id, new.email);
+  end if;
+  return new;
+end;
+$$;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_admin_signup();
+
+create function public.is_admin_user()
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (select 1 from public.admin_user where auth_user_id = auth.uid());
+$$;
+
+-- ============================================================================
+-- TEAM MEMBERS
+-- Internal organizational records only. No login, no email, no password —
+-- ever. Only the admin can create, edit, assign to, or archive them.
+-- ============================================================================
+create table public.team_members (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  title text,
+  avatar_url text,
+  archived boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
 
 -- ============================================================================
 -- FOLDERS (self-referencing for subfolders)
+-- owner_id is optional: a folder can belong to a specific team member's
+-- workspace, or be a general/studio-wide project with no single owner.
 -- ============================================================================
 create table public.folders (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   description text,
-  owner_id uuid not null references public.profiles(id) on delete cascade,
+  owner_id uuid references public.team_members(id) on delete set null,
   parent_folder_id uuid references public.folders(id) on delete cascade,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -58,7 +100,7 @@ create table public.tasks (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   description text,
-  assigned_user_id uuid references public.profiles(id) on delete set null,
+  assigned_user_id uuid references public.team_members(id) on delete set null,
   folder_id uuid not null references public.folders(id) on delete cascade,
   task_list_id uuid references public.task_lists(id) on delete set null,
   status text not null default 'Not Started' check (
@@ -81,88 +123,6 @@ create index tasks_status_idx on public.tasks(status);
 create index tasks_deadline_idx on public.tasks(deadline);
 
 -- ============================================================================
--- NOTIFICATIONS
--- ============================================================================
-create table public.notifications (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references public.profiles(id) on delete cascade,
-  type text not null check (
-    type in ('assigned', 'deadline_approaching', 'overdue', 'completed', 'status_changed', 'note_added')
-  ),
-  message text not null,
-  related_task_id uuid references public.tasks(id) on delete cascade,
-  is_read boolean not null default false,
-  created_at timestamptz not null default now()
-);
-
-create index notifications_user_id_idx on public.notifications(user_id);
-create index notifications_is_read_idx on public.notifications(is_read);
-
--- ============================================================================
--- HELPER FUNCTIONS (security definer so they can be used safely inside RLS)
--- ============================================================================
-create function public.current_profile_id()
-returns uuid
-language sql
-security definer
-stable
-set search_path = public
-as $$
-  select id from public.profiles where auth_user_id = auth.uid();
-$$;
-
-create function public.is_admin()
-returns boolean
-language sql
-security definer
-stable
-set search_path = public
-as $$
-  select exists (
-    select 1 from public.profiles where auth_user_id = auth.uid() and role = 'admin'
-  );
-$$;
-
--- ============================================================================
--- AUTH TRIGGER: link or create a profile whenever someone signs up
--- The very first person to ever sign up becomes admin (the project manager).
--- ============================================================================
-create function public.handle_new_user()
-returns trigger
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  existing_profile_id uuid;
-  profile_count int;
-begin
-  select id into existing_profile_id
-  from public.profiles
-  where email = new.email and auth_user_id is null
-  limit 1;
-
-  if existing_profile_id is not null then
-    update public.profiles set auth_user_id = new.id where id = existing_profile_id;
-  else
-    select count(*) into profile_count from public.profiles;
-    insert into public.profiles (auth_user_id, name, email, role)
-    values (
-      new.id,
-      coalesce(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
-      new.email,
-      case when profile_count = 0 then 'admin' else 'member' end
-    );
-  end if;
-  return new;
-end;
-$$;
-
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute function public.handle_new_user();
-
--- ============================================================================
 -- updated_at MAINTENANCE
 -- ============================================================================
 create function public.set_updated_at()
@@ -175,6 +135,8 @@ begin
 end;
 $$;
 
+create trigger team_members_set_updated_at before update on public.team_members
+  for each row execute function public.set_updated_at();
 create trigger folders_set_updated_at before update on public.folders
   for each row execute function public.set_updated_at();
 create trigger task_lists_set_updated_at before update on public.task_lists
@@ -205,181 +167,41 @@ create trigger tasks_set_completed_at before insert or update on public.tasks
   for each row execute function public.set_completed_at();
 
 -- ============================================================================
--- NOTIFICATION TRIGGERS (security definer so RLS never blocks the insert)
--- ============================================================================
-create function public.notify_task_assigned()
-returns trigger
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  if new.assigned_user_id is not null and (
-    tg_op = 'INSERT' or new.assigned_user_id is distinct from old.assigned_user_id
-  ) then
-    insert into public.notifications (user_id, type, message, related_task_id)
-    values (new.assigned_user_id, 'assigned', 'You were assigned: ' || new.title, new.id);
-  end if;
-  return new;
-end;
-$$;
-
-create trigger tasks_notify_assigned
-  after insert or update on public.tasks
-  for each row execute function public.notify_task_assigned();
-
-create function public.notify_task_status_changed()
-returns trigger
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  if tg_op = 'UPDATE' and new.status is distinct from old.status and new.assigned_user_id is not null then
-    if new.status = 'Completed' then
-      insert into public.notifications (user_id, type, message, related_task_id)
-      values (new.assigned_user_id, 'completed', 'Task completed: ' || new.title, new.id);
-    else
-      insert into public.notifications (user_id, type, message, related_task_id)
-      values (new.assigned_user_id, 'status_changed', new.title || ' is now "' || new.status || '"', new.id);
-    end if;
-  end if;
-  return new;
-end;
-$$;
-
-create trigger tasks_notify_status_changed
-  after update on public.tasks
-  for each row execute function public.notify_task_status_changed();
-
-create function public.notify_task_note_added()
-returns trigger
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  if tg_op = 'UPDATE' and new.notes is distinct from old.notes
-     and new.notes is not null and length(trim(new.notes)) > 0
-     and new.assigned_user_id is not null then
-    insert into public.notifications (user_id, type, message, related_task_id)
-    values (new.assigned_user_id, 'note_added', 'New note on: ' || new.title, new.id);
-  end if;
-  return new;
-end;
-$$;
-
-create trigger tasks_notify_note_added
-  after update on public.tasks
-  for each row execute function public.notify_task_note_added();
-
--- ============================================================================
 -- ROW LEVEL SECURITY
+-- Single rule everywhere: you must be the recorded admin. No exceptions,
+-- no per-owner logic — there is only one person who can ever be signed in.
 -- ============================================================================
-alter table public.profiles enable row level security;
+alter table public.admin_user enable row level security;
+alter table public.team_members enable row level security;
 alter table public.folders enable row level security;
 alter table public.task_lists enable row level security;
 alter table public.tasks enable row level security;
-alter table public.notifications enable row level security;
 
--- profiles: everyone can see the team roster; users edit themselves; admins manage all
-create policy profiles_select_all on public.profiles
-  for select using (true);
+create policy admin_user_select_self on public.admin_user
+  for select using (auth_user_id = auth.uid());
 
-create policy profiles_insert_admin on public.profiles
-  for insert with check (public.is_admin());
+create policy team_members_all on public.team_members
+  for all using (public.is_admin_user()) with check (public.is_admin_user());
 
-create policy profiles_update_self_or_admin on public.profiles
-  for update using (auth_user_id = auth.uid() or public.is_admin());
+create policy folders_all on public.folders
+  for all using (public.is_admin_user()) with check (public.is_admin_user());
 
-create policy profiles_delete_admin on public.profiles
-  for delete using (public.is_admin());
+create policy task_lists_all on public.task_lists
+  for all using (public.is_admin_user()) with check (public.is_admin_user());
 
--- folders: scoped to each member's personal workspace; admin sees/manages all
-create policy folders_select on public.folders
-  for select using (owner_id = public.current_profile_id() or public.is_admin());
-
-create policy folders_insert on public.folders
-  for insert with check (owner_id = public.current_profile_id() or public.is_admin());
-
-create policy folders_update on public.folders
-  for update using (owner_id = public.current_profile_id() or public.is_admin());
-
-create policy folders_delete on public.folders
-  for delete using (owner_id = public.current_profile_id() or public.is_admin());
-
--- task_lists: inherit access from parent folder
-create policy task_lists_select on public.task_lists
-  for select using (
-    public.is_admin() or exists (
-      select 1 from public.folders f where f.id = folder_id and f.owner_id = public.current_profile_id()
-    )
-  );
-
-create policy task_lists_insert on public.task_lists
-  for insert with check (
-    public.is_admin() or exists (
-      select 1 from public.folders f where f.id = folder_id and f.owner_id = public.current_profile_id()
-    )
-  );
-
-create policy task_lists_update on public.task_lists
-  for update using (
-    public.is_admin() or exists (
-      select 1 from public.folders f where f.id = folder_id and f.owner_id = public.current_profile_id()
-    )
-  );
-
-create policy task_lists_delete on public.task_lists
-  for delete using (
-    public.is_admin() or exists (
-      select 1 from public.folders f where f.id = folder_id and f.owner_id = public.current_profile_id()
-    )
-  );
-
--- tasks: visible to folder owner, admin, and whoever is assigned
-create policy tasks_select on public.tasks
-  for select using (
-    public.is_admin()
-    or assigned_user_id = public.current_profile_id()
-    or exists (select 1 from public.folders f where f.id = folder_id and f.owner_id = public.current_profile_id())
-  );
-
-create policy tasks_insert on public.tasks
-  for insert with check (
-    public.is_admin()
-    or exists (select 1 from public.folders f where f.id = folder_id and f.owner_id = public.current_profile_id())
-  );
-
-create policy tasks_update on public.tasks
-  for update using (
-    public.is_admin()
-    or assigned_user_id = public.current_profile_id()
-    or exists (select 1 from public.folders f where f.id = folder_id and f.owner_id = public.current_profile_id())
-  );
-
-create policy tasks_delete on public.tasks
-  for delete using (
-    public.is_admin()
-    or exists (select 1 from public.folders f where f.id = folder_id and f.owner_id = public.current_profile_id())
-  );
-
--- notifications: strictly personal, admin can view all for visibility
-create policy notifications_select on public.notifications
-  for select using (user_id = public.current_profile_id() or public.is_admin());
-
-create policy notifications_insert on public.notifications
-  for insert with check (user_id = public.current_profile_id() or public.is_admin());
-
-create policy notifications_update on public.notifications
-  for update using (user_id = public.current_profile_id() or public.is_admin());
-
-create policy notifications_delete on public.notifications
-  for delete using (user_id = public.current_profile_id() or public.is_admin());
+create policy tasks_all on public.tasks
+  for all using (public.is_admin_user()) with check (public.is_admin_user());
 
 -- ============================================================================
--- REALTIME
+-- REALTIME (so the dashboard updates live as you edit tasks/folders)
 -- ============================================================================
 alter publication supabase_realtime add table public.tasks;
 alter publication supabase_realtime add table public.folders;
-alter publication supabase_realtime add table public.notifications;
+alter publication supabase_realtime add table public.team_members;
+
+-- ============================================================================
+-- IMPORTANT MANUAL STEP (Supabase dashboard, not SQL):
+-- Authentication → Providers → Email → turn OFF "Allow new users to sign up"
+-- once you've created your one admin account. The app has no sign-up page,
+-- but this closes the signup API entirely as defense in depth.
+-- ============================================================================

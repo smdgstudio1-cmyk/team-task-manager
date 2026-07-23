@@ -1,9 +1,5 @@
-import { useAuthStore } from '@/store/authStore'
-import { AdminDashboard } from '@/components/dashboard/AdminDashboard'
-import { PersonalDashboard } from '@/components/dashboard/PersonalDashboard'
+import { StudioDashboard } from '@/components/dashboard/StudioDashboard'
 
 export function DashboardPage() {
-  const profile = useAuthStore((s) => s.profile)
-  if (!profile) return null
-  return profile.role === 'admin' ? <AdminDashboard /> : <PersonalDashboard profileId={profile.id} />
+  return <StudioDashboard />
 }

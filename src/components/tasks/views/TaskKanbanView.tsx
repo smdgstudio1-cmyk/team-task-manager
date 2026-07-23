@@ -8,8 +8,8 @@ import { Avatar } from '@/components/ui/Avatar'
 import { useDataStore } from '@/store/dataStore'
 
 function KanbanCard({ task, onClick }: { task: Task; onClick: () => void }) {
-  const profiles = useDataStore((s) => s.profiles)
-  const assignee = profiles.find((p) => p.id === task.assigned_user_id)
+  const teamMembers = useDataStore((s) => s.teamMembers)
+  const assignee = teamMembers.find((p) => p.id === task.assigned_user_id)
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: task.id })
   const overdue = isOverdue(task)
 

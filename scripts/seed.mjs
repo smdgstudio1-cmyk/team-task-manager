@@ -1,5 +1,7 @@
-// One-time demo data seeder for Lumen Studio.
-// Uses the SERVICE ROLE key locally only — never ship this key to the browser.
+// Demo data seeder for Lumen Studio's single-admin app.
+// Team members here are plain organizational records — no auth accounts,
+// no login, ever. Uses the SERVICE ROLE key locally only (bypasses RLS);
+// never ship this key to the browser.
 // Usage: node scripts/seed.mjs   (reads SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY from .env)
 
 import { createClient } from '@supabase/supabase-js'
@@ -41,14 +43,11 @@ const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
 })
 
-const DEMO_PASSWORD = 'Demo1234!'
-
 const TEAM = [
-  { name: 'Priya Nair', email: 'priya@lumenstudio.co', role: 'admin', title: 'Project Manager' },
-  { name: 'Alex Rivera', email: 'alex@lumenstudio.co', role: 'member', title: 'Designer' },
-  { name: 'Jordan Lee', email: 'jordan@lumenstudio.co', role: 'member', title: 'Copywriter' },
-  { name: 'Sam Okafor', email: 'sam@lumenstudio.co', role: 'member', title: 'Developer' },
-  { name: 'Mia Chen', email: 'mia@lumenstudio.co', role: 'member', title: 'Illustrator' },
+  { name: 'Alex Rivera', title: 'Designer' },
+  { name: 'Jordan Lee', title: 'Copywriter' },
+  { name: 'Sam Okafor', title: 'Developer' },
+  { name: 'Mia Chen', title: 'Illustrator' },
 ]
 
 function daysFromNow(n) {
@@ -58,53 +57,28 @@ function daysFromNow(n) {
 }
 
 async function main() {
-  console.log('Creating demo team members...')
-  const profileIdByEmail = {}
+  console.log('Clearing previous demo data...')
+  await supabase.from('team_members').delete().in(
+    'name',
+    TEAM.map((t) => t.name)
+  )
 
+  console.log('Creating team members...')
+  const memberIdByName = {}
   for (const person of TEAM) {
-    const { data: created, error } = await supabase.auth.admin.createUser({
-      email: person.email,
-      password: DEMO_PASSWORD,
-      email_confirm: true,
-      user_metadata: { name: person.name },
-    })
-    if (error && !String(error.message).includes('already been registered')) {
-      throw error
-    }
-    if (error) {
-      console.log(`  ${person.email} already exists, skipping creation`)
-    } else {
-      console.log(`  created ${person.email} (${created.user.id})`)
-    }
+    const { data, error } = await supabase.from('team_members').insert(person).select().single()
+    if (error) throw error
+    memberIdByName[person.name] = data.id
   }
 
-  // give the trigger a moment, then fetch profiles
-  await new Promise((r) => setTimeout(r, 500))
-
-  const { data: profiles, error: profilesErr } = await supabase.from('profiles').select('*')
-  if (profilesErr) throw profilesErr
-
-  for (const p of profiles) {
-    profileIdByEmail[p.email] = p.id
-  }
-
-  // ensure roles match TEAM definition (in case of re-run)
-  for (const person of TEAM) {
-    const id = profileIdByEmail[person.email]
-    if (!id) continue
-    await supabase.from('profiles').update({ role: person.role }).eq('id', id)
-  }
-
-  const priya = profileIdByEmail['priya@lumenstudio.co']
-  const alex = profileIdByEmail['alex@lumenstudio.co']
-  const jordan = profileIdByEmail['jordan@lumenstudio.co']
-  const sam = profileIdByEmail['sam@lumenstudio.co']
-  const mia = profileIdByEmail['mia@lumenstudio.co']
+  const alex = memberIdByName['Alex Rivera']
+  const jordan = memberIdByName['Jordan Lee']
+  const sam = memberIdByName['Sam Okafor']
+  const mia = memberIdByName['Mia Chen']
 
   console.log('Clearing previous demo folders/tasks (if any)...')
-  await supabase.from('folders').delete().in('owner_id', [priya, alex, jordan, sam, mia])
+  await supabase.from('folders').delete().in('owner_id', [alex, jordan, sam, mia])
 
-  console.log('Creating folders...')
   async function makeFolder(name, description, owner_id, parent_folder_id = null) {
     const { data, error } = await supabase
       .from('folders')
@@ -125,6 +99,8 @@ async function main() {
     const { error } = await supabase.from('tasks').insert(t)
     if (error) throw error
   }
+
+  console.log('Creating folders and tasks...')
 
   // ---- Alex (Designer) ----
   const novaBrand = await makeFolder('Brand Refresh — Nova Coffee', 'Full brand identity refresh for Nova Coffee Co.', alex)
@@ -149,7 +125,7 @@ async function main() {
 
   // ---- Jordan (Copywriter) ----
   const novaCopy = await makeFolder('Nova Coffee Copywriting', 'Voice, tone, and website copy for Nova Coffee', jordan)
-  const websiteContent = await makeFolder('Website Content Q3', 'Copy for the studio\'s own site refresh', jordan)
+  const websiteContent = await makeFolder('Website Content Q3', "Copy for the studio's own site refresh", jordan)
   const novaCopyList = await makeList('Copy Drafts', novaCopy)
   const websiteList = await makeList('Page Copy', websiteContent)
 
@@ -158,10 +134,10 @@ async function main() {
   await makeTask({ title: 'Write product descriptions (12 items)', assigned_user_id: jordan, folder_id: novaCopy, task_list_id: novaCopyList, status: 'In Progress', priority: 'Medium', deadline: daysFromNow(7), position: 2 })
   await makeTask({ title: 'Menu board copy', assigned_user_id: jordan, folder_id: novaCopy, task_list_id: novaCopyList, status: 'Not Started', priority: 'Urgent', deadline: daysFromNow(-1), position: 3 })
   await makeTask({ title: 'About page draft', assigned_user_id: jordan, folder_id: websiteContent, task_list_id: websiteList, status: 'Not Started', priority: 'Low', deadline: daysFromNow(12), position: 0 })
-  await makeTask({ title: 'Services page draft', assigned_user_id: jordan, folder_id: websiteContent, task_list_id: websiteList, status: 'Waiting / Blocked', priority: 'Medium', notes: 'Need final service list from Priya', deadline: daysFromNow(4), position: 1 })
+  await makeTask({ title: 'Services page draft', assigned_user_id: jordan, folder_id: websiteContent, task_list_id: websiteList, status: 'Waiting / Blocked', priority: 'Medium', notes: 'Need final service list', deadline: daysFromNow(4), position: 1 })
 
   // ---- Sam (Developer) ----
-  const studioSite = await makeFolder('Studio Website Rebuild', 'Rebuilding lumenstudio.co on a new stack', sam)
+  const studioSite = await makeFolder('Studio Website Rebuild', 'Rebuilding the studio site on a new stack', sam)
   const frontend = await makeFolder('Frontend', 'Client-side build', sam, studioSite)
   const backend = await makeFolder('Backend', 'CMS + API work', sam, studioSite)
   const frontendList = await makeList('Components', frontend)
@@ -184,19 +160,17 @@ async function main() {
   await makeTask({ title: 'Coffee bean character sketches', assigned_user_id: mia, folder_id: novaIllustrations, task_list_id: novaIllustList, status: 'Completed', priority: 'Medium', deadline: daysFromNow(-8), completed_at: daysFromNow(-7), position: 0 })
   await makeTask({ title: 'Final illustration — cup icon set', assigned_user_id: mia, folder_id: novaIllustrations, task_list_id: novaIllustList, status: 'In Progress', priority: 'High', deadline: daysFromNow(1), position: 1 })
   await makeTask({ title: 'Seasonal pattern for autumn cups', assigned_user_id: mia, folder_id: novaIllustrations, task_list_id: novaIllustList, status: 'Not Started', priority: 'Low', deadline: daysFromNow(20), position: 2 })
-  await makeTask({ title: 'Overdue: pattern revisions from client', assigned_user_id: mia, folder_id: novaIllustrations, task_list_id: novaIllustList, status: 'Not Started', priority: 'Urgent', deadline: daysFromNow(-5), position: 3 })
+  await makeTask({ title: 'Pattern revisions from client', assigned_user_id: mia, folder_id: novaIllustrations, task_list_id: novaIllustList, status: 'Not Started', priority: 'Urgent', deadline: daysFromNow(-5), position: 3 })
   await makeTask({ title: 'Instagram carousel illustrations', assigned_user_id: mia, folder_id: socialPack, task_list_id: socialList, status: 'In Review', priority: 'Medium', deadline: daysFromNow(2), position: 0 })
 
-  // ---- Priya (PM) — her own workspace for studio ops ----
-  const studioOps = await makeFolder('Studio Operations', 'Internal planning and admin', priya)
+  // ---- General / studio-wide (no single owner) ----
+  const studioOps = await makeFolder('Studio Operations', 'Internal planning and admin', null)
   const opsList = await makeList('Planning', studioOps)
-  await makeTask({ title: 'Quarterly client review deck', assigned_user_id: priya, folder_id: studioOps, task_list_id: opsList, status: 'In Progress', priority: 'High', deadline: daysFromNow(4), position: 0 })
-  await makeTask({ title: 'Freelancer contract renewals', assigned_user_id: priya, folder_id: studioOps, task_list_id: opsList, status: 'Waiting / Blocked', priority: 'Medium', deadline: daysFromNow(-1), position: 1 })
-  await makeTask({ title: 'Team retro notes', assigned_user_id: priya, folder_id: studioOps, task_list_id: opsList, status: 'Completed', priority: 'Low', deadline: daysFromNow(-6), completed_at: daysFromNow(-6), position: 2 })
+  await makeTask({ title: 'Quarterly client review deck', folder_id: studioOps, task_list_id: opsList, status: 'In Progress', priority: 'High', deadline: daysFromNow(4), position: 0 })
+  await makeTask({ title: 'Freelancer contract renewals', folder_id: studioOps, task_list_id: opsList, status: 'Waiting / Blocked', priority: 'Medium', deadline: daysFromNow(-1), position: 1 })
+  await makeTask({ title: 'Team retro notes', folder_id: studioOps, task_list_id: opsList, status: 'Completed', priority: 'Low', deadline: daysFromNow(-6), completed_at: daysFromNow(-6), position: 2 })
 
   console.log('Demo data seeded successfully.')
-  console.log(`Login with any of: ${TEAM.map((t) => t.email).join(', ')}`)
-  console.log(`Password: ${DEMO_PASSWORD}`)
 }
 
 main().catch((err) => {

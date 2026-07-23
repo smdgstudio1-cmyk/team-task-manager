@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Lock, ShieldCheck } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { supabase } from '@/lib/supabaseClient'
 import { Card } from '@/components/ui/Card'
@@ -8,70 +9,82 @@ import { Avatar } from '@/components/ui/Avatar'
 import { formatDate } from '@/lib/utils'
 
 export function SettingsPage() {
-  const profile = useAuthStore((s) => s.profile)
-  const refreshProfile = useAuthStore((s) => s.refreshProfile)
+  const adminUser = useAuthStore((s) => s.adminUser)
   const signOut = useAuthStore((s) => s.signOut)
-  const [name, setName] = useState(profile?.name || '')
+  const [newPassword, setNewPassword] = useState('')
   const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  if (!profile) return null
+  if (!adminUser) return null
 
-  async function handleSave(e: React.FormEvent) {
+  async function handlePasswordChange(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
-    setSaved(false)
-    await supabase.from('profiles').update({ name: name.trim() }).eq('id', profile!.id)
-    await refreshProfile()
+    setMessage(null)
+    setError(null)
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
     setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    if (error) {
+      setError(error.message)
+      return
+    }
+    setNewPassword('')
+    setMessage('Password updated.')
+    setTimeout(() => setMessage(null), 3000)
   }
 
   return (
     <div className="max-w-xl space-y-5">
       <div>
         <h1 className="text-2xl font-semibold text-ink-900">Settings</h1>
-        <p className="mt-1 text-sm text-ink-500">Manage your profile and account.</p>
+        <p className="mt-1 text-sm text-ink-500">Manage your account and private access.</p>
       </div>
 
       <Card>
-        <div className="mb-4 flex items-center gap-3">
-          <Avatar name={profile.name} size="lg" />
-          <div>
-            <p className="font-semibold text-ink-900">{profile.name}</p>
-            <p className="text-xs text-ink-500">{profile.role === 'admin' ? 'Project Manager' : 'Team Member'}</p>
+        <div className="flex items-center gap-3">
+          <Avatar name={adminUser.email} size="lg" />
+          <div className="min-w-0">
+            <p className="truncate font-semibold text-ink-900">{adminUser.email}</p>
+            <p className="flex items-center gap-1 text-xs text-ink-500">
+              <ShieldCheck size={13} />
+              Studio manager — only account with access
+            </p>
           </div>
         </div>
-
-        <form onSubmit={handleSave} className="space-y-4">
-          <FieldWrap label="Display name">
-            <Input value={name} onChange={(e) => setName(e.target.value)} required />
-          </FieldWrap>
-          <FieldWrap label="Email">
-            <Input value={profile.email} disabled className="opacity-60" />
-          </FieldWrap>
-          <div className="flex items-center gap-3">
-            <Button type="submit" size="sm" disabled={saving}>
-              {saving ? 'Saving...' : 'Save changes'}
-            </Button>
-            {saved && <span className="text-sm text-emerald-600">Saved</span>}
+        <dl className="mt-4 space-y-2 border-t border-ink-100 pt-4 text-sm">
+          <div className="flex justify-between">
+            <dt className="text-ink-500">Member since</dt>
+            <dd className="text-ink-800">{formatDate(adminUser.created_at)}</dd>
           </div>
-        </form>
+        </dl>
       </Card>
 
       <Card>
-        <h2 className="mb-3 text-sm font-semibold text-ink-800">Account</h2>
-        <dl className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <dt className="text-ink-500">Member since</dt>
-            <dd className="text-ink-800">{formatDate(profile.created_at)}</dd>
+        <h2 className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-ink-800">
+          <Lock size={14} />
+          Change password
+        </h2>
+        <p className="mb-3 text-sm text-ink-500">Update the password used to sign in to this private workspace.</p>
+        <form onSubmit={handlePasswordChange} className="space-y-3">
+          <FieldWrap label="New password">
+            <Input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              minLength={6}
+              required
+              placeholder="••••••••"
+            />
+          </FieldWrap>
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          <div className="flex items-center gap-3">
+            <Button type="submit" size="sm" disabled={saving}>
+              {saving ? 'Updating...' : 'Update password'}
+            </Button>
+            {message && <span className="text-sm text-emerald-600">{message}</span>}
           </div>
-          <div className="flex justify-between">
-            <dt className="text-ink-500">Role</dt>
-            <dd className="text-ink-800">{profile.role === 'admin' ? 'Admin / Project Manager' : 'Team Member'}</dd>
-          </div>
-        </dl>
+        </form>
       </Card>
 
       <Card>

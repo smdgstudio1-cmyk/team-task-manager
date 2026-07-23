@@ -1,7 +1,7 @@
 import { Search, X } from 'lucide-react'
 import type { TaskFilterState } from '@/lib/taskFilters'
 import { hasActiveFilters, DEFAULT_FILTERS } from '@/lib/taskFilters'
-import { TASK_PRIORITIES, TASK_STATUSES, type Profile, type Folder } from '@/lib/types'
+import { TASK_PRIORITIES, TASK_STATUSES, type TeamMember, type Folder } from '@/lib/types'
 import { Select, Input } from '@/components/ui/Field'
 
 export function TaskFiltersBar({
@@ -14,7 +14,7 @@ export function TaskFiltersBar({
 }: {
   filters: TaskFilterState
   onChange: (f: TaskFilterState) => void
-  profiles?: Profile[]
+  profiles?: TeamMember[]
   folders?: Folder[]
   showAssignee?: boolean
   showFolder?: boolean

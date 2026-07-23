@@ -1,5 +1,3 @@
-export type Role = 'admin' | 'member'
-
 export type TaskStatus =
   | 'Not Started'
   | 'In Progress'
@@ -9,28 +7,29 @@ export type TaskStatus =
 
 export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent'
 
-export type NotificationType =
-  | 'assigned'
-  | 'deadline_approaching'
-  | 'overdue'
-  | 'completed'
-  | 'status_changed'
-  | 'note_added'
+export interface AdminUser {
+  id: string
+  auth_user_id: string
+  email: string
+  created_at: string
+}
 
-export interface Profile {
+/** An internal organizational record only — never an authenticated user. */
+export interface TeamMember {
   id: string
   name: string
-  email: string
+  title: string | null
   avatar_url: string | null
-  role: Role
+  archived: boolean
   created_at: string
+  updated_at: string
 }
 
 export interface Folder {
   id: string
   name: string
   description: string | null
-  owner_id: string
+  owner_id: string | null
   parent_folder_id: string | null
   created_at: string
   updated_at: string
@@ -60,16 +59,6 @@ export interface Task {
   position: number
   created_at: string
   updated_at: string
-}
-
-export interface AppNotification {
-  id: string
-  user_id: string
-  type: NotificationType
-  message: string
-  related_task_id: string | null
-  is_read: boolean
-  created_at: string
 }
 
 export const TASK_STATUSES: TaskStatus[] = [

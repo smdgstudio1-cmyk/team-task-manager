@@ -10,7 +10,7 @@ import { ExplorerPage } from '@/pages/ExplorerPage'
 import { FolderPage } from '@/pages/FolderPage'
 import { OverduePage } from '@/pages/OverduePage'
 import { CompletedPage } from '@/pages/CompletedPage'
-import { NotificationsPage } from '@/pages/NotificationsPage'
+import { CalendarPage } from '@/pages/CalendarPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 
 function FullScreenLoader() {
@@ -22,16 +22,16 @@ function FullScreenLoader() {
 }
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
-  const profile = useAuthStore((s) => s.profile)
+  const adminUser = useAuthStore((s) => s.adminUser)
   const loading = useAuthStore((s) => s.loading)
   if (loading) return <FullScreenLoader />
-  if (!profile) return <Navigate to="/login" replace />
+  if (!adminUser) return <Navigate to="/login" replace />
   return <>{children}</>
 }
 
 function App() {
   const initialize = useAuthStore((s) => s.initialize)
-  const profile = useAuthStore((s) => s.profile)
+  const adminUser = useAuthStore((s) => s.adminUser)
   const loading = useAuthStore((s) => s.loading)
 
   useEffect(() => {
@@ -43,7 +43,7 @@ function App() {
       <Routes>
         <Route
           path="/login"
-          element={loading ? <FullScreenLoader /> : profile ? <Navigate to="/dashboard" replace /> : <LoginPage />}
+          element={loading ? <FullScreenLoader /> : adminUser ? <Navigate to="/dashboard" replace /> : <LoginPage />}
         />
         <Route
           element={
@@ -59,7 +59,7 @@ function App() {
           <Route path="/folders/:folderId" element={<FolderPage />} />
           <Route path="/overdue" element={<OverduePage />} />
           <Route path="/completed" element={<CompletedPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

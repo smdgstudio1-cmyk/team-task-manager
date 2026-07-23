@@ -39,7 +39,7 @@ export function TaskExplorer({
   const [filters, setFilters] = useState<TaskFilterState>(DEFAULT_FILTERS)
   const [creating, setCreating] = useState(false)
   const [openTaskId, setOpenTaskId] = useState<string | null>(initialOpenTaskId || null)
-  const profiles = useDataStore((s) => s.profiles)
+  const teamMembers = useDataStore((s) => s.teamMembers)
   const folders = useDataStore((s) => s.folders)
 
   const filtered = useMemo(() => filterTasks(tasks, filters), [tasks, filters])
@@ -71,7 +71,7 @@ export function TaskExplorer({
       <TaskFiltersBar
         filters={filters}
         onChange={setFilters}
-        profiles={showAssigneeFilter ? profiles : undefined}
+        profiles={showAssigneeFilter ? teamMembers : undefined}
         folders={showFolderFilter ? folders : undefined}
         showAssignee={showAssigneeFilter}
         showFolder={showFolderFilter}
