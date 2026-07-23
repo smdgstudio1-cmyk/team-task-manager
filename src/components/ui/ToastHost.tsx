@@ -5,7 +5,7 @@ import { cx } from '@/lib/utils'
 const STYLES = {
   success: { icon: CheckCircle2, bg: 'bg-emerald-600', },
   error: { icon: XCircle, bg: 'bg-red-600' },
-  info: { icon: Info, bg: 'bg-ink-800' },
+  info: { icon: Info, bg: 'bg-ink-700' },
 }
 
 export function ToastHost() {

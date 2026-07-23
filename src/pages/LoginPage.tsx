@@ -50,8 +50,8 @@ export function LoginPage() {
           </div>
         )}
 
-        <div className="rounded-2xl border border-white/10 bg-white p-7 shadow-soft-lg">
-          <p className="mb-5 text-sm text-ink-500">Sign in to manage your studio's projects and tasks.</p>
+        <div className="glass rounded-2xl border border-white/10 p-7 shadow-soft-lg">
+          <p className="mb-5 text-sm text-ink-400">Sign in to manage your studio's projects and tasks.</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <FieldWrap label="Email">
@@ -74,7 +74,7 @@ export function LoginPage() {
               />
             </FieldWrap>
 
-            {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+            {error && <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</p>}
 
             <Button type="submit" disabled={submitting} className="w-full">
               {submitting ? 'Signing in...' : 'Sign in'}

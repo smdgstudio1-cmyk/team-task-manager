@@ -52,7 +52,7 @@ export function NotesSection({ taskId }: { taskId: string }) {
 
   return (
     <div>
-      <p className="mb-2 text-sm font-semibold text-brand-700">Notes</p>
+      <p className="mb-2 text-sm font-semibold text-brand-400">Notes</p>
 
       <div className="mb-3 space-y-2">
         <Textarea
@@ -71,7 +71,7 @@ export function NotesSection({ taskId }: { taskId: string }) {
 
       <div className="space-y-2">
         {notes.map((note) => (
-          <div key={note.id} className="rounded-xl border border-ink-100 bg-ink-50/60 p-3">
+          <div key={note.id} className="rounded-xl border border-white/8 bg-white/5 p-3">
             {editingId === note.id ? (
               <div className="space-y-2">
                 <Textarea value={editBody} onChange={(e) => setEditBody(e.target.value)} rows={2} autoFocus />
@@ -86,19 +86,19 @@ export function NotesSection({ taskId }: { taskId: string }) {
               </div>
             ) : (
               <>
-                <p className="whitespace-pre-wrap text-sm text-ink-700">{note.body}</p>
+                <p className="whitespace-pre-wrap text-sm text-ink-200">{note.body}</p>
                 <div className="mt-2 flex items-center justify-between">
-                  <p className="text-xs text-ink-400">
+                  <p className="text-xs text-ink-500">
                     {adminUser?.email || 'You'} · {formatRelative(note.created_at)}
                     {note.updated_at !== note.created_at && ' (edited)'}
                   </p>
                   <div className="flex gap-1">
-                    <button onClick={() => startEdit(note)} className="rounded p-1 text-ink-400 hover:bg-ink-200 hover:text-ink-700">
+                    <button onClick={() => startEdit(note)} className="rounded p-1 text-ink-400 hover:bg-white/8 hover:text-ink-100">
                       <Pencil size={13} />
                     </button>
                     <button
                       onClick={() => setPendingDelete(note)}
-                      className="rounded p-1 text-ink-400 hover:bg-red-100 hover:text-red-600"
+                      className="rounded p-1 text-ink-400 hover:bg-red-500/15 hover:text-red-400"
                     >
                       <Trash2 size={13} />
                     </button>
@@ -108,7 +108,7 @@ export function NotesSection({ taskId }: { taskId: string }) {
             )}
           </div>
         ))}
-        {notes.length === 0 && <p className="px-1 text-sm text-ink-400">No notes yet.</p>}
+        {notes.length === 0 && <p className="px-1 text-sm text-ink-500">No notes yet.</p>}
       </div>
 
       <ConfirmDialog

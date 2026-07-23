@@ -48,8 +48,14 @@ export function formatDateShort(value: string | null): string {
 
 export function formatRelative(value: string | null): string {
   if (!value) return '—'
-  const diffMs = new Date(value).getTime() - Date.now()
-  const diffDays = Math.round(diffMs / (24 * 60 * 60 * 1000))
+  // Compare calendar days (midnight to midnight), not raw millisecond deltas —
+  // otherwise a deadline of "yesterday at midnight" checked in the afternoon
+  // reads as "2 days ago" purely from the time-of-day offset.
+  const target = new Date(value)
+  const today = new Date()
+  const targetDay = Date.UTC(target.getFullYear(), target.getMonth(), target.getDate())
+  const todayDay = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())
+  const diffDays = Math.round((targetDay - todayDay) / (24 * 60 * 60 * 1000))
   if (diffDays === 0) return 'Today'
   if (diffDays === 1) return 'Tomorrow'
   if (diffDays === -1) return 'Yesterday'
@@ -63,19 +69,21 @@ export function calcProgress(completed: number, total: number): number {
   return Math.round((completed / total) * 100)
 }
 
+// Soft-glow chips: translucent tint background + bright saturated text — the
+// standard dark-UI badge pattern. Pastel-on-white chips would look muddy here.
 export const STATUS_COLORS: Record<TaskStatus, { bg: string; text: string; dot: string }> = {
-  'Not Started': { bg: 'bg-ink-100', text: 'text-ink-700', dot: 'bg-ink-400' },
-  'In Progress': { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500' },
-  'Waiting / Blocked': { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' },
-  'In Review': { bg: 'bg-purple-50', text: 'text-purple-700', dot: 'bg-purple-500' },
-  Completed: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
+  'Not Started': { bg: 'bg-ink-500/15', text: 'text-ink-300', dot: 'bg-ink-400' },
+  'In Progress': { bg: 'bg-blue-500/15', text: 'text-blue-400', dot: 'bg-blue-400' },
+  'Waiting / Blocked': { bg: 'bg-amber-500/15', text: 'text-amber-400', dot: 'bg-amber-400' },
+  'In Review': { bg: 'bg-purple-500/15', text: 'text-purple-400', dot: 'bg-purple-400' },
+  Completed: { bg: 'bg-emerald-500/15', text: 'text-emerald-400', dot: 'bg-emerald-400' },
 }
 
 export const PRIORITY_COLORS: Record<TaskPriority, { bg: string; text: string; dot: string }> = {
-  Low: { bg: 'bg-ink-100', text: 'text-ink-600', dot: 'bg-ink-400' },
-  Medium: { bg: 'bg-sky-50', text: 'text-sky-700', dot: 'bg-sky-500' },
-  High: { bg: 'bg-orange-50', text: 'text-orange-700', dot: 'bg-orange-500' },
-  Urgent: { bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500' },
+  Low: { bg: 'bg-ink-500/15', text: 'text-ink-300', dot: 'bg-ink-400' },
+  Medium: { bg: 'bg-sky-500/15', text: 'text-sky-400', dot: 'bg-sky-400' },
+  High: { bg: 'bg-orange-500/15', text: 'text-orange-400', dot: 'bg-orange-400' },
+  Urgent: { bg: 'bg-red-500/15', text: 'text-red-400', dot: 'bg-red-400' },
 }
 
 export function initials(name: string): string {

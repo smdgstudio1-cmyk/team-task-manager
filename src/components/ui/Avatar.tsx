@@ -1,12 +1,12 @@
 import { cx, initials } from '@/lib/utils'
 
 const PALETTE = [
-  'bg-brand-100 text-brand-700',
-  'bg-emerald-100 text-emerald-700',
-  'bg-amber-100 text-amber-700',
-  'bg-sky-100 text-sky-700',
-  'bg-pink-100 text-pink-700',
-  'bg-orange-100 text-orange-700',
+  'bg-brand-500/15 text-brand-300',
+  'bg-emerald-500/15 text-emerald-400',
+  'bg-amber-500/15 text-amber-400',
+  'bg-sky-500/15 text-sky-400',
+  'bg-pink-500/15 text-pink-400',
+  'bg-orange-500/15 text-orange-400',
 ]
 
 function colorFor(name: string) {

@@ -9,8 +9,8 @@ export function OverduePage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold text-ink-900">Overdue</h1>
-        <p className="mt-1 text-sm text-ink-500">Tasks across the studio that have passed their deadline.</p>
+        <h1 className="text-2xl font-semibold text-ink-50">Overdue</h1>
+        <p className="mt-1 text-sm text-ink-400">Tasks across the studio that have passed their deadline.</p>
       </div>
       <TaskExplorer tasks={overdueTasks} />
     </div>

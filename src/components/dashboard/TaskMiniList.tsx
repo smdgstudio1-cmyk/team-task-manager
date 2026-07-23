@@ -29,9 +29,9 @@ export function TaskMiniList({
 
   return (
     <Card>
-      <h3 className="mb-3 text-sm font-semibold text-ink-800">{title}</h3>
+      <h3 className="mb-3 text-sm font-semibold text-ink-100">{title}</h3>
       {tasks.length === 0 ? (
-        <div className="flex items-center gap-3 rounded-xl bg-ink-50 px-3 py-4 text-sm text-ink-500">
+        <div className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-4 text-sm text-ink-400">
           <EmptyIcon size={16} className="shrink-0 text-ink-400" />
           {emptyLabel}
         </div>
@@ -44,12 +44,12 @@ export function TaskMiniList({
               <button
                 key={t.id}
                 onClick={() => setOpenTaskId(t.id)}
-                className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left hover:bg-ink-50"
+                className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left hover:bg-white/5"
               >
                 {showAssignee && assignee && <Avatar name={assignee.name} size="sm" />}
-                <span className="min-w-0 flex-1 truncate text-sm text-ink-800">{t.title}</span>
+                <span className="min-w-0 flex-1 truncate text-sm text-ink-100">{t.title}</span>
                 <StatusBadge status={t.status} className="hidden sm:inline-flex" />
-                <span className="shrink-0 text-xs text-ink-400">{formatRelative(dateValue)}</span>
+                <span className="shrink-0 text-xs text-ink-500">{formatRelative(dateValue)}</span>
               </button>
             )
           })}

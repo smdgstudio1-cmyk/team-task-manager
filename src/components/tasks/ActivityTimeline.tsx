@@ -29,7 +29,7 @@ export function ActivityTimeline({ taskId }: { taskId: string }) {
   const activity = useDataStore((s) => s.activityByTask[taskId]) || []
 
   if (activity.length === 0) {
-    return <p className="px-1 text-sm text-ink-400">No activity recorded yet.</p>
+    return <p className="px-1 text-sm text-ink-500">No activity recorded yet.</p>
   }
 
   return (
@@ -39,14 +39,14 @@ export function ActivityTimeline({ taskId }: { taskId: string }) {
         return (
           <div key={a.id} className="flex gap-3">
             <div className="flex flex-col items-center">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink-100 text-ink-500">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/8 text-ink-400">
                 <Icon size={13} />
               </div>
-              {i < activity.length - 1 && <div className="w-px flex-1 bg-ink-100" />}
+              {i < activity.length - 1 && <div className="w-px flex-1 bg-white/8" />}
             </div>
             <div className="min-w-0 flex-1 pb-4">
-              <p className="text-sm text-ink-700">{a.message}</p>
-              <p className="mt-0.5 text-xs text-ink-400">{formatRelative(a.created_at)}</p>
+              <p className="text-sm text-ink-200">{a.message}</p>
+              <p className="mt-0.5 text-xs text-ink-500">{formatRelative(a.created_at)}</p>
             </div>
           </div>
         )

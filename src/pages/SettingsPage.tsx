@@ -37,35 +37,35 @@ export function SettingsPage() {
   return (
     <div className="max-w-xl space-y-5">
       <div>
-        <h1 className="text-2xl font-semibold text-ink-900">Settings</h1>
-        <p className="mt-1 text-sm text-ink-500">Manage your account and private access.</p>
+        <h1 className="text-2xl font-semibold text-ink-50">Settings</h1>
+        <p className="mt-1 text-sm text-ink-400">Manage your account and private access.</p>
       </div>
 
       <Card>
         <div className="flex items-center gap-3">
           <Avatar name={adminUser.email} size="lg" />
           <div className="min-w-0">
-            <p className="truncate font-semibold text-ink-900">{adminUser.email}</p>
-            <p className="flex items-center gap-1 text-xs text-ink-500">
+            <p className="truncate font-semibold text-ink-50">{adminUser.email}</p>
+            <p className="flex items-center gap-1 text-xs text-ink-400">
               <ShieldCheck size={13} />
               Studio manager — only account with access
             </p>
           </div>
         </div>
-        <dl className="mt-4 space-y-2 border-t border-ink-100 pt-4 text-sm">
+        <dl className="mt-4 space-y-2 border-t border-white/8 pt-4 text-sm">
           <div className="flex justify-between">
-            <dt className="text-ink-500">Member since</dt>
-            <dd className="text-ink-800">{formatDate(adminUser.created_at)}</dd>
+            <dt className="text-ink-400">Member since</dt>
+            <dd className="text-ink-100">{formatDate(adminUser.created_at)}</dd>
           </div>
         </dl>
       </Card>
 
       <Card>
-        <h2 className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-ink-800">
+        <h2 className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-ink-100">
           <Lock size={14} />
           Change password
         </h2>
-        <p className="mb-3 text-sm text-ink-500">Update the password used to sign in to this private workspace.</p>
+        <p className="mb-3 text-sm text-ink-400">Update the password used to sign in to this private workspace.</p>
         <form onSubmit={handlePasswordChange} className="space-y-3">
           <FieldWrap label="New password">
             <Input
@@ -77,19 +77,19 @@ export function SettingsPage() {
               placeholder="••••••••"
             />
           </FieldWrap>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-400">{error}</p>}
           <div className="flex items-center gap-3">
             <Button type="submit" size="sm" disabled={saving}>
               {saving ? 'Updating...' : 'Update password'}
             </Button>
-            {message && <span className="text-sm text-emerald-600">{message}</span>}
+            {message && <span className="text-sm text-emerald-400">{message}</span>}
           </div>
         </form>
       </Card>
 
       <Card>
-        <h2 className="mb-1 text-sm font-semibold text-ink-800">Sign out</h2>
-        <p className="mb-3 text-sm text-ink-500">You'll need to sign in again to access your workspace.</p>
+        <h2 className="mb-1 text-sm font-semibold text-ink-100">Sign out</h2>
+        <p className="mb-3 text-sm text-ink-400">You'll need to sign in again to access your workspace.</p>
         <Button variant="danger" size="sm" onClick={signOut}>
           Sign out
         </Button>

@@ -39,7 +39,7 @@ export function OverdueBadge({ className }: { className?: string }) {
   return (
     <span
       className={cx(
-        'inline-flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700 whitespace-nowrap',
+        'inline-flex items-center gap-1.5 rounded-full bg-red-500/15 px-2.5 py-1 text-xs font-semibold text-red-400 whitespace-nowrap',
         className
       )}
     >

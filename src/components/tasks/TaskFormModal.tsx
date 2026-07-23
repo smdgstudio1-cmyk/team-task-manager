@@ -136,7 +136,7 @@ export function TaskFormModal({
                 ))}
               </Select>
             </FieldWrap>
-            <FieldWrap label="Folder">
+            <FieldWrap label="Project">
               <Select
                 value={folderId}
                 onChange={(e) => {

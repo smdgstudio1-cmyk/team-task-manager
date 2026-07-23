@@ -8,7 +8,7 @@ function Group({ title, tasks, onOpenTask, tint }: { title: string; tasks: Task[
   if (tasks.length === 0) return null
   return (
     <div>
-      <p className={`mb-2 text-sm font-semibold ${tint || 'text-ink-500'}`}>
+      <p className={`mb-2 text-sm font-semibold ${tint || 'text-ink-400'}`}>
         {title} ({tasks.length})
       </p>
       <div className="space-y-2">
@@ -34,8 +34,8 @@ export function TaskDeadlineView({ tasks, onOpenTask }: { tasks: Task[]; onOpenT
 
   return (
     <div className="space-y-6">
-      <Group title="Overdue" tasks={overdue} onOpenTask={onOpenTask} tint="text-red-600" />
-      <Group title="Due today" tasks={dueToday} onOpenTask={onOpenTask} tint="text-amber-600" />
+      <Group title="Overdue" tasks={overdue} onOpenTask={onOpenTask} tint="text-red-400" />
+      <Group title="Due today" tasks={dueToday} onOpenTask={onOpenTask} tint="text-amber-400" />
       <Group title="Due this week" tasks={dueThisWeek} onOpenTask={onOpenTask} />
       <Group title="Later" tasks={later} onOpenTask={onOpenTask} />
       <Group title="No deadline" tasks={noDeadline} onOpenTask={onOpenTask} />

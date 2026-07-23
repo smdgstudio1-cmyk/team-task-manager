@@ -39,7 +39,7 @@ export function NotificationBell() {
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="relative rounded-xl p-2.5 text-ink-500 hover:bg-ink-100 hover:text-ink-800"
+        className="relative rounded-xl p-2.5 text-ink-400 hover:bg-white/8 hover:text-ink-100"
         aria-label="Notifications"
       >
         <Bell size={19} />
@@ -53,11 +53,11 @@ export function NotificationBell() {
       {open && (
         <>
           <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="animate-fade-in absolute right-0 z-40 mt-2 w-80 rounded-2xl border border-ink-200 bg-white shadow-soft-lg sm:w-96">
-            <div className="flex items-center justify-between border-b border-ink-100 px-4 py-3">
-              <p className="text-sm font-semibold text-ink-900">Notifications</p>
+          <div className="glass animate-fade-in absolute right-0 z-40 mt-2 w-80 rounded-2xl border border-white/10 shadow-soft-lg sm:w-96">
+            <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
+              <p className="text-sm font-semibold text-ink-50">Notifications</p>
               {unreadCount > 0 && (
-                <button onClick={() => markAllNotificationsRead()} className="text-xs font-medium text-brand-600 hover:text-brand-700">
+                <button onClick={() => markAllNotificationsRead()} className="text-xs font-medium text-brand-400 hover:text-brand-300">
                   Mark all read
                 </button>
               )}
@@ -73,33 +73,33 @@ export function NotificationBell() {
                     onClick={() => {
                       markNotificationRead(n.id)
                       setOpen(false)
-                      if (task) navigate(`/folders/${task.folder_id}?task=${task.id}`)
+                      if (task) navigate(`/projects/${task.folder_id}?task=${task.id}`)
                       else navigate('/notifications')
                     }}
                     className={cx(
-                      'flex w-full items-start gap-3 border-b border-ink-50 px-4 py-3 text-left last:border-0 hover:bg-ink-50',
-                      !n.is_read && 'bg-brand-50/40'
+                      'flex w-full items-start gap-3 border-b border-white/5 px-4 py-3 text-left last:border-0 hover:bg-white/5',
+                      !n.is_read && 'bg-brand-500/10'
                     )}
                   >
-                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink-100 text-ink-500">
+                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/8 text-ink-300">
                       <Icon size={15} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm text-ink-800">{n.message}</p>
-                      <p className="mt-0.5 text-xs text-ink-400">{timeAgo(n.created_at)}</p>
+                      <p className="truncate text-sm text-ink-100">{n.message}</p>
+                      <p className="mt-0.5 text-xs text-ink-500">{timeAgo(n.created_at)}</p>
                     </div>
                     {!n.is_read && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand-500" />}
                   </button>
                 )
               })}
             </div>
-            <div className="border-t border-ink-100 px-4 py-2 text-center">
+            <div className="border-t border-white/8 px-4 py-2 text-center">
               <button
                 onClick={() => {
                   setOpen(false)
                   navigate('/notifications')
                 }}
-                className="text-xs font-medium text-ink-500 hover:text-ink-800"
+                className="text-xs font-medium text-ink-400 hover:text-ink-100"
               >
                 View all
               </button>

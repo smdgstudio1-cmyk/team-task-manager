@@ -4,7 +4,7 @@ export function ProgressBar({
   value,
   className,
   colorClassName = 'bg-brand-500',
-  trackClassName = 'bg-ink-100',
+  trackClassName = 'bg-white/8',
   size = 'md',
 }: {
   value: number

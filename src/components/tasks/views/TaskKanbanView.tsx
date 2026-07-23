@@ -26,11 +26,11 @@ function KanbanCard({ task, onClick }: { task: Task; onClick: () => void }) {
       {...attributes}
       onClick={onClick}
       className={cx(
-        'cursor-grab rounded-xl border border-ink-200 bg-white p-3 shadow-sm active:cursor-grabbing',
+        'cursor-grab rounded-xl border border-white/8 bg-ink-800 p-3 shadow-soft active:cursor-grabbing',
         isDragging && 'opacity-50'
       )}
     >
-      <p className="text-sm font-medium text-ink-900">{task.title}</p>
+      <p className="text-sm font-medium text-ink-50">{task.title}</p>
       <div className="mt-2 flex flex-wrap items-center gap-1.5">
         <PriorityBadge priority={task.priority} />
         {overdue && <OverdueBadge />}
@@ -59,20 +59,20 @@ function KanbanColumn({
     <div
       ref={setNodeRef}
       className={cx(
-        'flex w-72 shrink-0 flex-col rounded-2xl bg-ink-50 p-3 transition-colors',
-        isOver && 'bg-brand-50 ring-2 ring-brand-200'
+        'flex w-72 shrink-0 flex-col rounded-2xl bg-white/5 p-3 transition-colors',
+        isOver && 'bg-brand-500/10 ring-2 ring-brand-500/30'
       )}
     >
       <div className="mb-3 flex items-center gap-2 px-1">
         <span className={cx('h-2 w-2 rounded-full', c.dot)} />
-        <p className="text-sm font-semibold text-ink-800">{status}</p>
-        <span className="ml-auto rounded-full bg-white px-2 py-0.5 text-xs font-medium text-ink-500">{tasks.length}</span>
+        <p className="text-sm font-semibold text-ink-100">{status}</p>
+        <span className="ml-auto rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-ink-400">{tasks.length}</span>
       </div>
       <div className="flex-1 space-y-2 overflow-y-auto">
         {tasks.map((t) => (
           <KanbanCard key={t.id} task={t} onClick={() => onOpenTask(t.id)} />
         ))}
-        {tasks.length === 0 && <p className="px-1 py-6 text-center text-xs text-ink-300">Drop tasks here</p>}
+        {tasks.length === 0 && <p className="px-1 py-6 text-center text-xs text-ink-600">Drop tasks here</p>}
       </div>
     </div>
   )

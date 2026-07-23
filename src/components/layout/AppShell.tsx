@@ -22,18 +22,18 @@ export function AppShell() {
   }, [loadAll, subscribeRealtime])
 
   return (
-    <div className="flex h-screen overflow-hidden bg-ink-50">
-      <aside className="hidden w-64 shrink-0 border-r border-ink-200 bg-white lg:block">
+    <div className="flex h-screen overflow-hidden">
+      <aside className="hidden w-64 shrink-0 border-r border-white/8 bg-ink-900/60 lg:block">
         <SidebarContent />
       </aside>
 
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-ink-900/40" onClick={() => setMobileOpen(false)} />
-          <div className="animate-slide-in absolute left-0 top-0 h-full w-72 bg-white shadow-xl">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
+          <div className="animate-slide-in absolute left-0 top-0 h-full w-72 border-r border-white/8 bg-ink-900 shadow-soft-lg">
             <button
               onClick={() => setMobileOpen(false)}
-              className="absolute right-3 top-4 rounded-lg p-1.5 text-ink-400 hover:bg-ink-100"
+              className="absolute right-3 top-4 rounded-lg p-1.5 text-ink-400 hover:bg-white/8"
             >
               <X size={18} />
             </button>

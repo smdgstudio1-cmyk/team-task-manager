@@ -19,26 +19,26 @@ export function Drawer({
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-ink-900/40" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/60" onClick={onClose}>
       <div
-        className="animate-drawer-in flex h-full w-full max-w-lg flex-col bg-white shadow-soft-lg"
+        className="glass animate-drawer-in flex h-full w-full max-w-lg flex-col border-l border-white/10 shadow-soft-lg"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between border-b border-ink-100 px-6 py-5">
+        <div className="flex items-start justify-between border-b border-white/8 px-6 py-5">
           <div>
-            <h2 className="text-lg font-semibold text-ink-900">{title}</h2>
-            {subtitle && <p className="mt-0.5 text-sm text-ink-500">{subtitle}</p>}
+            <h2 className="text-lg font-semibold text-ink-50">{title}</h2>
+            {subtitle && <p className="mt-0.5 text-sm text-ink-400">{subtitle}</p>}
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-100 hover:text-ink-700"
+            className="rounded-lg p-1.5 text-ink-400 hover:bg-white/8 hover:text-ink-100"
             aria-label="Close"
           >
             <X size={18} />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
-        {footer && <div className="border-t border-ink-100 px-6 py-4">{footer}</div>}
+        {footer && <div className="border-t border-white/8 px-6 py-4">{footer}</div>}
       </div>
     </div>
   )
@@ -46,8 +46,8 @@ export function Drawer({
 
 export function DrawerSection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="border-b border-ink-100 py-5 first:pt-0 last:border-0 last:pb-0">
-      <p className="mb-3 text-sm font-semibold text-brand-700">{title}</p>
+    <div className="border-b border-white/8 py-5 first:pt-0 last:border-0 last:pb-0">
+      <p className="mb-3 text-sm font-semibold text-brand-400">{title}</p>
       <div className="space-y-4">{children}</div>
     </div>
   )

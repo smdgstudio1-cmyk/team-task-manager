@@ -84,7 +84,7 @@ export function TaskFiltersBar({
       {hasActiveFilters(filters) && (
         <button
           onClick={() => onChange(DEFAULT_FILTERS)}
-          className="flex items-center gap-1 rounded-lg px-2.5 py-2 text-sm font-medium text-ink-500 hover:bg-ink-100"
+          className="flex items-center gap-1 rounded-lg px-2.5 py-2 text-sm font-medium text-ink-400 hover:bg-white/8"
         >
           <X size={14} />
           Clear

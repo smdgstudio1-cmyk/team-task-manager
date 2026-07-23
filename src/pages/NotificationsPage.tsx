@@ -28,8 +28,8 @@ export function NotificationsPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-ink-900">Notifications</h1>
-          <p className="mt-1 text-sm text-ink-500">Deadline alerts and stale-task reminders.</p>
+          <h1 className="text-2xl font-semibold text-ink-50">Notifications</h1>
+          <p className="mt-1 text-sm text-ink-400">Deadline alerts and stale-task reminders.</p>
         </div>
         {unreadCount > 0 && (
           <Button size="sm" variant="secondary" onClick={() => markAllNotificationsRead()}>
@@ -50,19 +50,19 @@ export function NotificationsPage() {
                 key={n.id}
                 onClick={() => {
                   markNotificationRead(n.id)
-                  if (task) navigate(`/folders/${task.folder_id}?task=${task.id}`)
+                  if (task) navigate(`/projects/${task.folder_id}?task=${task.id}`)
                 }}
                 className={cx(
-                  'flex w-full items-start gap-3 border-b border-ink-100 px-5 py-4 text-left last:border-0 hover:bg-ink-50',
-                  !n.is_read && 'bg-brand-50/40'
+                  'flex w-full items-start gap-3 border-b border-white/8 px-5 py-4 text-left last:border-0 hover:bg-white/5',
+                  !n.is_read && 'bg-brand-500/10'
                 )}
               >
-                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink-100 text-ink-500">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/8 text-ink-300">
                   <Icon size={16} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm text-ink-800">{n.message}</p>
-                  <p className="mt-0.5 text-xs text-ink-400">{formatDate(n.created_at)}</p>
+                  <p className="text-sm text-ink-100">{n.message}</p>
+                  <p className="mt-0.5 text-xs text-ink-500">{formatDate(n.created_at)}</p>
                 </div>
                 {!n.is_read && <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-brand-500" />}
               </button>

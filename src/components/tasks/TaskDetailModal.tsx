@@ -92,7 +92,7 @@ export function TaskDetailModal({ taskId, onClose }: { taskId: string | null; on
             <div className="flex gap-1">
               <button
                 onClick={() => setEditing(true)}
-                className="rounded-lg p-2 text-ink-500 hover:bg-ink-100"
+                className="rounded-lg p-2 text-ink-400 hover:bg-white/8 hover:text-ink-100"
                 aria-label="Edit"
                 title="Edit"
               >
@@ -100,7 +100,7 @@ export function TaskDetailModal({ taskId, onClose }: { taskId: string | null; on
               </button>
               <button
                 onClick={handleDuplicate}
-                className="rounded-lg p-2 text-ink-500 hover:bg-ink-100"
+                className="rounded-lg p-2 text-ink-400 hover:bg-white/8 hover:text-ink-100"
                 aria-label="Duplicate"
                 title="Duplicate"
               >
@@ -108,7 +108,7 @@ export function TaskDetailModal({ taskId, onClose }: { taskId: string | null; on
               </button>
               <button
                 onClick={handleArchiveToggle}
-                className="rounded-lg p-2 text-ink-500 hover:bg-ink-100"
+                className="rounded-lg p-2 text-ink-400 hover:bg-white/8 hover:text-ink-100"
                 aria-label={task.archived ? 'Restore' : 'Archive'}
                 title={task.archived ? 'Restore' : 'Archive'}
               >
@@ -116,7 +116,7 @@ export function TaskDetailModal({ taskId, onClose }: { taskId: string | null; on
               </button>
               <button
                 onClick={() => setPendingDelete(true)}
-                className="rounded-lg p-2 text-red-500 hover:bg-red-50"
+                className="rounded-lg p-2 text-red-400 hover:bg-red-500/10"
                 aria-label="Delete"
                 title="Delete"
               >
@@ -135,25 +135,25 @@ export function TaskDetailModal({ taskId, onClose }: { taskId: string | null; on
           <PriorityBadge priority={task.priority} />
           {overdue && <OverdueBadge />}
           {task.archived && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-ink-100 px-2.5 py-1 text-xs font-medium text-ink-500">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/8 px-2.5 py-1 text-xs font-medium text-ink-400">
               Archived
             </span>
           )}
         </div>
 
-        <div className="mt-4 flex gap-1 border-b border-ink-100">
+        <div className="mt-4 flex gap-1 border-b border-white/8">
           {TABS.map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
               className={cx(
                 'relative flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors',
-                tab === t.key ? 'text-brand-700' : 'text-ink-500 hover:text-ink-800'
+                tab === t.key ? 'text-brand-400' : 'text-ink-400 hover:text-ink-100'
               )}
             >
               {t.label}
               {typeof t.count === 'number' && t.count > 0 && (
-                <span className="rounded-full bg-ink-100 px-1.5 py-0.5 text-[10px] font-semibold text-ink-500">{t.count}</span>
+                <span className="rounded-full bg-white/8 px-1.5 py-0.5 text-[10px] font-semibold text-ink-400">{t.count}</span>
               )}
               {tab === t.key && <span className="absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-brand-500" />}
             </button>
@@ -163,52 +163,52 @@ export function TaskDetailModal({ taskId, onClose }: { taskId: string | null; on
         <div className="pt-5">
           {tab === 'details' && (
             <div className="space-y-5">
-              {task.description && <p className="text-sm text-ink-600">{task.description}</p>}
+              {task.description && <p className="text-sm text-ink-300">{task.description}</p>}
 
-              <div className="grid grid-cols-2 gap-4 rounded-xl bg-ink-50 p-4 text-sm">
+              <div className="grid grid-cols-2 gap-4 rounded-xl bg-white/5 p-4 text-sm">
                 <div>
-                  <p className="text-xs font-medium text-ink-400">Assigned to</p>
+                  <p className="text-xs font-medium text-ink-500">Assigned to</p>
                   <div className="mt-1 flex items-center gap-2">
                     {assignee ? (
                       <>
                         <Avatar name={assignee.name} size="sm" />
-                        <span className="text-ink-800">{assignee.name}</span>
+                        <span className="text-ink-100">{assignee.name}</span>
                       </>
                     ) : (
-                      <span className="text-ink-400">Unassigned</span>
+                      <span className="text-ink-500">Unassigned</span>
                     )}
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-ink-400">Folder</p>
-                  <p className="mt-1 flex items-center gap-1.5 text-ink-800">
+                  <p className="text-xs font-medium text-ink-500">Project</p>
+                  <p className="mt-1 flex items-center gap-1.5 text-ink-100">
                     <FolderKanban size={14} className="text-ink-400" />
                     {path.map((f) => f.name).join(' / ') || '—'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-ink-400">Start date</p>
-                  <p className="mt-1 text-ink-800">{formatDate(task.start_date)}</p>
+                  <p className="text-xs font-medium text-ink-500">Start date</p>
+                  <p className="mt-1 text-ink-100">{formatDate(task.start_date)}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-ink-400">Deadline</p>
-                  <p className="mt-1 flex items-center gap-1.5 text-ink-800">
+                  <p className="text-xs font-medium text-ink-500">Deadline</p>
+                  <p className="mt-1 flex items-center gap-1.5 text-ink-100">
                     <Calendar size={14} className="text-ink-400" />
                     {formatDate(task.deadline)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-ink-400">Completed on</p>
-                  <p className="mt-1 text-ink-800">{formatDate(task.completed_at)}</p>
+                  <p className="text-xs font-medium text-ink-500">Completed on</p>
+                  <p className="mt-1 text-ink-100">{formatDate(task.completed_at)}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-ink-400">Last updated</p>
-                  <p className="mt-1 text-ink-800">{formatDate(task.updated_at)}</p>
+                  <p className="text-xs font-medium text-ink-500">Last updated</p>
+                  <p className="mt-1 text-ink-100">{formatDate(task.updated_at)}</p>
                 </div>
               </div>
 
               <div>
-                <p className="mb-1.5 text-xs font-medium text-ink-400">Quick status change</p>
+                <p className="mb-1.5 text-xs font-medium text-ink-500">Quick status change</p>
                 <Select value={task.status} onChange={(e) => updateTask(task.id, { status: e.target.value as Task['status'] })}>
                   {TASK_STATUSES.map((s) => (
                     <option key={s} value={s}>

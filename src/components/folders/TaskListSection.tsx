@@ -41,7 +41,7 @@ export function TaskListSection({
   }
 
   return (
-    <div className="rounded-2xl border border-ink-200 bg-white">
+    <div className="rounded-2xl border border-white/8 bg-ink-800">
       <div className="flex items-center gap-2 px-4 py-3">
         <button onClick={() => setExpanded((e) => !e)} className="text-ink-400">
           {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -56,21 +56,21 @@ export function TaskListSection({
             className="max-w-xs"
           />
         ) : (
-          <p className="text-sm font-semibold text-ink-800">{list.name}</p>
+          <p className="text-sm font-semibold text-ink-100">{list.name}</p>
         )}
-        <span className="rounded-full bg-ink-100 px-2 py-0.5 text-xs font-medium text-ink-500">{tasks.length}</span>
+        <span className="rounded-full bg-white/8 px-2 py-0.5 text-xs font-medium text-ink-400">{tasks.length}</span>
         <div className="ml-auto flex items-center gap-1">
           {canManage && (
             <>
-              <button onClick={() => setCreating(true)} className="rounded p-1.5 text-ink-400 hover:bg-ink-100 hover:text-ink-700" title="Add task">
+              <button onClick={() => setCreating(true)} className="rounded p-1.5 text-ink-400 hover:bg-white/8 hover:text-ink-100" title="Add task">
                 <Plus size={14} />
               </button>
-              <button onClick={() => setRenaming(true)} className="rounded p-1.5 text-ink-400 hover:bg-ink-100 hover:text-ink-700" title="Rename list">
+              <button onClick={() => setRenaming(true)} className="rounded p-1.5 text-ink-400 hover:bg-white/8 hover:text-ink-100" title="Rename list">
                 <Pencil size={14} />
               </button>
               <button
                 onClick={() => setConfirmingDelete(true)}
-                className="rounded p-1.5 text-ink-400 hover:bg-red-100 hover:text-red-600"
+                className="rounded p-1.5 text-ink-400 hover:bg-red-500/15 hover:text-red-400"
                 title="Delete list"
               >
                 <Trash2 size={14} />
@@ -80,8 +80,8 @@ export function TaskListSection({
         </div>
       </div>
       {expanded && (
-        <div className="space-y-2 border-t border-ink-100 p-3">
-          {tasks.length === 0 && <p className="px-2 py-2 text-sm text-ink-400">No tasks in this list yet.</p>}
+        <div className="space-y-2 border-t border-white/8 p-3">
+          {tasks.length === 0 && <p className="px-2 py-2 text-sm text-ink-500">No tasks in this list yet.</p>}
           {tasks.map((t) => (
             <TaskCard key={t.id} task={t} onClick={() => setOpenTaskId(t.id)} />
           ))}
@@ -121,7 +121,7 @@ export function NewTaskListInline({ folderId }: { folderId: string }) {
     return (
       <button
         onClick={() => setAdding(true)}
-        className="flex items-center gap-2 rounded-2xl border border-dashed border-ink-300 px-4 py-3 text-sm font-medium text-ink-500 hover:border-brand-400 hover:text-brand-600"
+        className="flex items-center gap-2 rounded-2xl border border-dashed border-white/15 px-4 py-3 text-sm font-medium text-ink-400 hover:border-brand-400 hover:text-brand-400"
       >
         <ListPlus size={16} />
         New task list
@@ -130,7 +130,7 @@ export function NewTaskListInline({ folderId }: { folderId: string }) {
   }
 
   return (
-    <div className="flex items-center gap-2 rounded-2xl border border-ink-200 bg-white px-4 py-3">
+    <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-ink-800 px-4 py-3">
       <Input
         autoFocus
         value={name}

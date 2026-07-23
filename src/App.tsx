@@ -4,12 +4,10 @@ import { useAuthStore } from '@/store/authStore'
 import { AppShell } from '@/components/layout/AppShell'
 import { LoginPage } from '@/pages/LoginPage'
 import { DashboardPage } from '@/pages/DashboardPage'
-import { MyTasksPage } from '@/pages/MyTasksPage'
 import { TeamPage } from '@/pages/TeamPage'
-import { ExplorerPage } from '@/pages/ExplorerPage'
-import { FolderPage } from '@/pages/FolderPage'
+import { TeamMemberPage } from '@/pages/TeamMemberPage'
+import { ProjectPage } from '@/pages/ProjectPage'
 import { OverduePage } from '@/pages/OverduePage'
-import { CompletedPage } from '@/pages/CompletedPage'
 import { CalendarPage } from '@/pages/CalendarPage'
 import { NotificationsPage } from '@/pages/NotificationsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
@@ -17,7 +15,7 @@ import { ToastHost } from '@/components/ui/ToastHost'
 
 function FullScreenLoader() {
   return (
-    <div className="flex h-screen items-center justify-center bg-ink-50 text-sm text-ink-400">
+    <div className="flex h-screen items-center justify-center text-sm text-ink-400">
       Loading...
     </div>
   )
@@ -56,12 +54,10 @@ function App() {
           }
         >
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/my-tasks" element={<MyTasksPage />} />
           <Route path="/team" element={<TeamPage />} />
-          <Route path="/folders" element={<ExplorerPage />} />
-          <Route path="/folders/:folderId" element={<FolderPage />} />
+          <Route path="/team/:memberId" element={<TeamMemberPage />} />
+          <Route path="/projects/:projectId" element={<ProjectPage />} />
           <Route path="/overdue" element={<OverduePage />} />
-          <Route path="/completed" element={<CompletedPage />} />
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/settings" element={<SettingsPage />} />

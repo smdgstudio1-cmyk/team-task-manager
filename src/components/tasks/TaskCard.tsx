@@ -29,7 +29,7 @@ export function TaskCard({ task, onClick }: { task: Task; onClick: () => void })
         }
       }}
       className={cx(
-        'group flex w-full cursor-pointer items-center gap-3 rounded-xl border border-ink-200/70 bg-white px-3.5 py-3 text-left transition-all hover:-translate-y-px hover:border-ink-300 hover:shadow-soft',
+        'group flex w-full cursor-pointer items-center gap-3 rounded-xl border border-white/8 bg-ink-800 px-3.5 py-3 text-left transition-all hover:-translate-y-px hover:border-white/20 hover:shadow-soft',
         completed && 'opacity-60'
       )}
     >
@@ -37,7 +37,7 @@ export function TaskCard({ task, onClick }: { task: Task; onClick: () => void })
         onClick={toggleComplete}
         className={cx(
           'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
-          completed ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-ink-300 group-hover:border-brand-400'
+          completed ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-ink-600 group-hover:border-brand-400'
         )}
         aria-label="Toggle complete"
       >
@@ -45,7 +45,7 @@ export function TaskCard({ task, onClick }: { task: Task; onClick: () => void })
       </button>
 
       <div className="min-w-0 flex-1">
-        <p className={cx('truncate text-sm font-medium text-ink-900', completed && 'line-through')}>{task.title}</p>
+        <p className={cx('truncate text-sm font-medium text-ink-50', completed && 'line-through')}>{task.title}</p>
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
           <StatusBadge status={task.status} />
           <PriorityBadge priority={task.priority} />

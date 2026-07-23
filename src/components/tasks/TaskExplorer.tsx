@@ -47,14 +47,14 @@ export function TaskExplorer({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex rounded-xl bg-ink-100 p-1">
+        <div className="flex rounded-xl bg-white/5 p-1">
           {VIEW_TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setView(tab.key)}
               className={cx(
                 'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
-                view === tab.key ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500 hover:text-ink-700'
+                view === tab.key ? 'bg-white/10 text-ink-50' : 'text-ink-400 hover:text-ink-200'
               )}
             >
               <tab.icon size={14} />

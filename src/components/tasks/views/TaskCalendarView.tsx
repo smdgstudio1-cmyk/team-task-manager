@@ -25,10 +25,10 @@ import { UpcomingDeadlinesPanel } from '../UpcomingDeadlinesPanel'
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 function chipStyle(task: Task): string {
-  if (task.status === 'Completed') return 'bg-emerald-50 text-emerald-700 line-through decoration-emerald-400'
-  if (isOverdue(task)) return 'bg-red-50 text-red-700'
-  if (task.status === 'Waiting / Blocked') return 'bg-amber-50 text-amber-700'
-  return 'bg-brand-50 text-brand-700'
+  if (task.status === 'Completed') return 'bg-emerald-500/15 text-emerald-400 line-through decoration-emerald-500/60'
+  if (isOverdue(task)) return 'bg-red-500/15 text-red-400'
+  if (task.status === 'Waiting / Blocked') return 'bg-amber-500/15 text-amber-400'
+  return 'bg-brand-500/15 text-brand-300'
 }
 
 function DayChip({ task, onOpenTask }: { task: Task; onOpenTask: (id: string) => void }) {
@@ -78,17 +78,17 @@ function DayCell({
       className={cx(
         'min-h-[88px] rounded-lg border p-1.5 text-left align-top transition-colors',
         compact ? 'min-h-[88px]' : 'min-h-[160px]',
-        inMonth ? 'border-ink-100' : 'border-transparent opacity-40',
-        today && 'border-brand-300 bg-brand-50/40',
-        isOver && 'bg-brand-50 ring-2 ring-brand-300'
+        inMonth ? 'border-white/8' : 'border-transparent opacity-40',
+        today && 'border-brand-500/50 bg-brand-500/10',
+        isOver && 'bg-brand-500/10 ring-2 ring-brand-500/40'
       )}
     >
-      <p className={cx('mb-1 text-xs font-medium', today ? 'text-brand-700' : 'text-ink-400')}>{format(date, 'd')}</p>
+      <p className={cx('mb-1 text-xs font-medium', today ? 'text-brand-400' : 'text-ink-500')}>{format(date, 'd')}</p>
       <div className="space-y-1">
         {tasks.slice(0, visibleLimit).map((t) => (
           <DayChip key={t.id} task={t} onOpenTask={onOpenTask} />
         ))}
-        {tasks.length > visibleLimit && <p className="px-1.5 text-[11px] text-ink-400">+{tasks.length - visibleLimit} more</p>}
+        {tasks.length > visibleLimit && <p className="px-1.5 text-[11px] text-ink-500">+{tasks.length - visibleLimit} more</p>}
       </div>
     </div>
   )
@@ -126,18 +126,18 @@ export function TaskCalendarView({ tasks, onOpenTask }: { tasks: Task[]; onOpenT
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_280px]">
-      <div className="rounded-2xl border border-ink-200/70 bg-white p-4 shadow-soft">
+      <div className="rounded-2xl border border-white/8 bg-ink-800 p-4 shadow-soft">
         <div className="mb-4 flex items-center justify-between">
-          <p className="text-sm font-semibold text-ink-900">
+          <p className="text-sm font-semibold text-ink-50">
             {mode === 'month' ? format(cursor, 'MMMM yyyy') : `Week of ${format(rangeStart, 'MMM d')}`}
           </p>
           <div className="flex items-center gap-2">
-            <div className="flex rounded-lg bg-ink-100 p-0.5">
+            <div className="flex rounded-lg bg-white/5 p-0.5">
               <button
                 onClick={() => setMode('month')}
                 className={cx(
                   'rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
-                  mode === 'month' ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500'
+                  mode === 'month' ? 'bg-white/10 text-ink-50' : 'text-ink-400'
                 )}
               >
                 Month
@@ -146,27 +146,27 @@ export function TaskCalendarView({ tasks, onOpenTask }: { tasks: Task[]; onOpenT
                 onClick={() => setMode('week')}
                 className={cx(
                   'rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
-                  mode === 'week' ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500'
+                  mode === 'week' ? 'bg-white/10 text-ink-50' : 'text-ink-400'
                 )}
               >
                 Week
               </button>
             </div>
             <div className="flex gap-1">
-              <button onClick={goPrev} className="rounded-lg p-1.5 text-ink-500 hover:bg-ink-100">
+              <button onClick={goPrev} className="rounded-lg p-1.5 text-ink-400 hover:bg-white/8">
                 <ChevronLeft size={16} />
               </button>
-              <button onClick={() => setCursor(new Date())} className="rounded-lg px-2 text-xs font-medium text-ink-500 hover:bg-ink-100">
+              <button onClick={() => setCursor(new Date())} className="rounded-lg px-2 text-xs font-medium text-ink-400 hover:bg-white/8">
                 Today
               </button>
-              <button onClick={goNext} className="rounded-lg p-1.5 text-ink-500 hover:bg-ink-100">
+              <button onClick={goNext} className="rounded-lg p-1.5 text-ink-400 hover:bg-white/8">
                 <ChevronRight size={16} />
               </button>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-ink-400">
+        <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-ink-500">
           {WEEKDAYS.map((d) => (
             <div key={d} className="py-1">
               {d}
@@ -192,7 +192,7 @@ export function TaskCalendarView({ tasks, onOpenTask }: { tasks: Task[]; onOpenT
           </div>
         </DndContext>
 
-        <p className="mt-3 text-xs text-ink-400">Drag a task chip to a new day to reschedule its deadline.</p>
+        <p className="mt-3 text-xs text-ink-500">Drag a task chip to a new day to reschedule its deadline.</p>
       </div>
 
       <UpcomingDeadlinesPanel tasks={tasks} onOpenTask={onOpenTask} />

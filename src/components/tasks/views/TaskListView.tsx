@@ -21,7 +21,7 @@ export function TaskListView({ tasks, onOpenTask }: { tasks: Task[]; onOpenTask:
       ))}
 
       {active.length === 0 && (
-        <p className="rounded-xl border border-dashed border-ink-200 px-4 py-6 text-center text-sm text-ink-400">
+        <p className="rounded-xl border border-dashed border-white/15 px-4 py-6 text-center text-sm text-ink-400">
           No active tasks — nice and clear.
         </p>
       )}
@@ -30,7 +30,7 @@ export function TaskListView({ tasks, onOpenTask }: { tasks: Task[]; onOpenTask:
         <div className="pt-3">
           <button
             onClick={() => setShowCompleted((s) => !s)}
-            className="flex items-center gap-1.5 text-sm font-medium text-ink-500 hover:text-ink-700"
+            className="flex items-center gap-1.5 text-sm font-medium text-ink-400 hover:text-ink-100"
           >
             {showCompleted ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             Completed ({completed.length})

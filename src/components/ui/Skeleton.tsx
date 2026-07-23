@@ -1,7 +1,7 @@
 import { cx } from '@/lib/utils'
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cx('animate-pulse rounded-lg bg-ink-200/70', className)} />
+  return <div className={cx('animate-pulse rounded-lg bg-white/8', className)} />
 }
 
 export function DashboardSkeleton() {
