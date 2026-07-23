@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { FolderFormModal } from '@/components/folders/FolderFormModal'
-import { getFolderStats } from '@/lib/folderStats'
+import { ProjectSection } from '@/components/folders/ProjectSection'
 import { calcProgress, isOverdue } from '@/lib/utils'
 
 export function TeamMemberPage() {
@@ -105,25 +105,10 @@ export function TeamMemberPage() {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((p) => {
-            const stats = getFolderStats(p.id, folders, tasks)
-            return (
-              <button key={p.id} onClick={() => navigate(`/projects/${p.id}`)} className="text-left">
-                <Card className="transition-all hover:-translate-y-px hover:shadow-soft-lg">
-                  <div className="flex items-center gap-2">
-                    <FolderKanban size={16} className="text-brand-400" />
-                    <p className="truncate text-sm font-semibold text-ink-50">{p.name}</p>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between text-xs text-ink-400">
-                    <span>{stats.active} active</span>
-                    <span className="font-semibold text-ink-100">{stats.progress}%</span>
-                  </div>
-                  <ProgressBar value={stats.progress} size="sm" className="mt-1.5" />
-                </Card>
-              </button>
-            )
-          })}
+        <div className="space-y-4">
+          {projects.map((p) => (
+            <ProjectSection key={p.id} folder={p} />
+          ))}
         </div>
       )}
 
