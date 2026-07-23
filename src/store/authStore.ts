@@ -51,11 +51,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   signIn: async (email, password) => {
     set({ error: null })
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) {
-      set({ error: error.message })
-      return { error: error.message }
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+    if (authError) {
+      set({ error: authError.message })
+      return { error: authError.message }
     }
+
+    // Don't rely solely on the onAuthStateChange listener below to unblock
+    // the redirect — it fires independently of this call and can race with
+    // it (e.g. a slow admin_user lookup), leaving the sign-in button idle
+    // with no feedback and no navigation. Resolve admin status here instead,
+    // so the caller always gets a definite outcome: redirect or a real error.
+    const adminUser = await fetchAdminUser()
+    if (!adminUser) {
+      const message = 'Signed in, but this account is not registered as the studio admin. Contact whoever set up this workspace.'
+      set({ error: message })
+      return { error: message }
+    }
+    set({ adminUser, error: null })
     return { error: null }
   },
 
