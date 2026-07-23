@@ -259,7 +259,7 @@ export function ProjectPage() {
         onClose={() => setConfirmingDelete(false)}
         onConfirm={handleDelete}
         title="Delete this project?"
-        description={`"${folder.name}" and everything inside it — workstreams, task lists, and tasks — will be permanently deleted.`}
+        description={`"${folder.name}" and everything inside it — workstreams, lists, tasks, notes, attachments, and activity history — will be permanently deleted. This can't be undone.`}
         confirmLabel="Delete"
         variant="danger"
       />

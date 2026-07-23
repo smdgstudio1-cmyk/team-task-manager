@@ -1,15 +1,17 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronDown, ChevronRight, FolderKanban, ListChecks, Plus, ExternalLink } from 'lucide-react'
+import { ChevronDown, ChevronRight, FolderKanban, ListChecks, Plus, ExternalLink, Trash2 } from 'lucide-react'
 import { useDataStore } from '@/store/dataStore'
 import { getFolderStats } from '@/lib/folderStats'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { TaskListSection, NewTaskListInline } from './TaskListSection'
 import { TaskCard } from '@/components/tasks/TaskCard'
 import { TaskDetailModal } from '@/components/tasks/TaskDetailModal'
 import { TaskFormModal } from '@/components/tasks/TaskFormModal'
 import { cx } from '@/lib/utils'
+import { toast } from '@/store/toastStore'
 import type { Folder } from '@/lib/types'
 
 export function ProjectSection({ folder }: { folder: Folder }) {
@@ -17,15 +19,23 @@ export function ProjectSection({ folder }: { folder: Folder }) {
   const folders = useDataStore((s) => s.folders)
   const taskLists = useDataStore((s) => s.taskLists)
   const tasks = useDataStore((s) => s.tasks)
+  const deleteFolder = useDataStore((s) => s.deleteFolder)
   const [expanded, setExpanded] = useState(true)
   const [creatingTask, setCreatingTask] = useState(false)
   const [openTaskId, setOpenTaskId] = useState<string | null>(null)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   const stats = getFolderStats(folder.id, folders, tasks)
   const listsHere = taskLists.filter((tl) => tl.folder_id === folder.id)
   const directTasks = tasks.filter((t) => t.folder_id === folder.id && !t.archived)
   const unlistedTasks = directTasks.filter((t) => !t.task_list_id)
   const isEmpty = listsHere.length === 0 && unlistedTasks.length === 0
+
+  async function handleDelete() {
+    await deleteFolder(folder.id)
+    toast.success(`"${folder.name}" deleted`)
+    setConfirmingDelete(false)
+  }
 
   return (
     <div className="flex max-h-[30rem] flex-col overflow-hidden rounded-2xl border border-white/8 bg-ink-800 shadow-soft">
@@ -62,6 +72,14 @@ export function ProjectSection({ folder }: { folder: Folder }) {
             >
               <ExternalLink size={14} />
             </button>
+            <button
+              onClick={() => setConfirmingDelete(true)}
+              className="rounded-lg p-1.5 text-ink-500 hover:bg-red-500/10 hover:text-red-400"
+              title="Delete project"
+              aria-label="Delete project"
+            >
+              <Trash2 size={14} />
+            </button>
           </div>
         </div>
         <ProgressBar value={stats.progress} size="sm" className="mt-2.5" />
@@ -97,6 +115,16 @@ export function ProjectSection({ folder }: { folder: Folder }) {
 
       <TaskFormModal open={creatingTask} onClose={() => setCreatingTask(false)} defaultFolderId={folder.id} />
       <TaskDetailModal taskId={openTaskId} onClose={() => setOpenTaskId(null)} />
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        onClose={() => setConfirmingDelete(false)}
+        onConfirm={handleDelete}
+        title="Delete this project?"
+        description={`"${folder.name}" and everything inside it — lists, tasks, notes, attachments, and activity history — will be permanently deleted. This can't be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }
