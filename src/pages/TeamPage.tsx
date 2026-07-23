@@ -1,28 +1,38 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { UserPlus, AlertTriangle, Pencil, Archive, ArchiveRestore, ChevronDown, ChevronRight, Users } from 'lucide-react'
+import { UserPlus, AlertTriangle, Pencil, Trash2, Users } from 'lucide-react'
 import { useDataStore } from '@/store/dataStore'
 import { Card } from '@/components/ui/Card'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { CreateMemberModal } from '@/components/dashboard/CreateMemberModal'
-import { calcProgress, cx, isOverdue } from '@/lib/utils'
+import { calcProgress, isOverdue } from '@/lib/utils'
 import { toast } from '@/store/toastStore'
 import type { TeamMember } from '@/lib/types'
 
 export function TeamPage() {
   const teamMembers = useDataStore((s) => s.teamMembers)
+  const folders = useDataStore((s) => s.folders)
   const tasks = useDataStore((s) => s.tasks)
-  const updateTeamMember = useDataStore((s) => s.updateTeamMember)
+  const deleteTeamMember = useDataStore((s) => s.deleteTeamMember)
   const navigate = useNavigate()
   const [creating, setCreating] = useState(false)
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null)
-  const [showArchived, setShowArchived] = useState(false)
+  const [deletingMember, setDeletingMember] = useState<TeamMember | null>(null)
 
-  const active = teamMembers.filter((m) => !m.archived)
-  const archived = teamMembers.filter((m) => m.archived)
+  async function handleDelete() {
+    if (!deletingMember) return
+    const { error } = await deleteTeamMember(deletingMember.id)
+    if (error) {
+      toast.error(error)
+      return
+    }
+    toast.success(`${deletingMember.name} deleted`)
+    setDeletingMember(null)
+  }
 
   function renderCard(p: TeamMember) {
     const mine = tasks.filter((t) => t.assigned_user_id === p.id && !t.archived)
@@ -63,19 +73,19 @@ export function TeamPage() {
             Edit
           </button>
           <button
-            onClick={() => {
-              updateTeamMember(p.id, { archived: !p.archived })
-              toast.success(p.archived ? `${p.name} restored` : `${p.name} archived`)
-            }}
-            className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-ink-400 hover:bg-white/8"
+            onClick={() => setDeletingMember(p)}
+            className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-ink-500 hover:bg-red-500/10 hover:text-red-400"
           >
-            {p.archived ? <ArchiveRestore size={12} /> : <Archive size={12} />}
-            {p.archived ? 'Restore' : 'Archive'}
+            <Trash2 size={12} />
+            Delete
           </button>
         </div>
       </Card>
     )
   }
+
+  const deletingProjectCount = deletingMember ? folders.filter((f) => f.owner_id === deletingMember.id).length : 0
+  const deletingTaskCount = deletingMember ? tasks.filter((t) => t.assigned_user_id === deletingMember.id).length : 0
 
   return (
     <div className="space-y-5">
@@ -83,7 +93,7 @@ export function TeamPage() {
         <div>
           <h1 className="text-2xl font-semibold text-ink-50">Team</h1>
           <p className="mt-1 text-sm text-ink-400">
-            {active.length} {active.length === 1 ? 'person' : 'people'} at Lumen Studio.
+            {teamMembers.length} {teamMembers.length === 1 ? 'person' : 'people'} at Lumen Studio.
           </p>
         </div>
         <Button size="sm" onClick={() => setCreating(true)}>
@@ -92,7 +102,7 @@ export function TeamPage() {
         </Button>
       </div>
 
-      {active.length === 0 ? (
+      {teamMembers.length === 0 ? (
         <EmptyState
           icon={Users}
           title="No team members yet"
@@ -105,24 +115,25 @@ export function TeamPage() {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{active.map(renderCard)}</div>
-      )}
-
-      {archived.length > 0 && (
-        <div>
-          <button
-            onClick={() => setShowArchived((s) => !s)}
-            className="flex items-center gap-1.5 text-sm font-medium text-ink-400 hover:text-ink-100"
-          >
-            {showArchived ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            Archived ({archived.length})
-          </button>
-          {showArchived && <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{archived.map(renderCard)}</div>}
-        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{teamMembers.map(renderCard)}</div>
       )}
 
       <CreateMemberModal open={creating} onClose={() => setCreating(false)} />
       <CreateMemberModal open={!!editingMember} onClose={() => setEditingMember(null)} member={editingMember} />
+
+      <ConfirmDialog
+        open={!!deletingMember}
+        onClose={() => setDeletingMember(null)}
+        onConfirm={handleDelete}
+        title={`Delete ${deletingMember?.name}?`}
+        description={
+          deletingProjectCount === 0 && deletingTaskCount === 0
+            ? 'This person will be permanently removed. This cannot be undone.'
+            : `This person will be permanently removed. Their ${deletingProjectCount} project${deletingProjectCount === 1 ? '' : 's'} and ${deletingTaskCount} task${deletingTaskCount === 1 ? '' : 's'} will not be deleted — they'll become unassigned instead. This cannot be undone.`
+        }
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

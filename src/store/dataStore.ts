@@ -50,7 +50,8 @@ interface DataState {
   archiveTask: (id: string, archived: boolean) => Promise<void>
 
   createTeamMember: (input: { name: string; title?: string | null }) => Promise<{ error: string | null }>
-  updateTeamMember: (id: string, patch: Partial<Pick<TeamMember, 'name' | 'title' | 'archived'>>) => Promise<void>
+  updateTeamMember: (id: string, patch: Partial<Pick<TeamMember, 'name' | 'title'>>) => Promise<void>
+  deleteTeamMember: (id: string) => Promise<{ error: string | null }>
 
   loadTaskExtras: (taskId: string) => Promise<void>
   createNote: (taskId: string, body: string) => Promise<void>
@@ -293,6 +294,19 @@ export const useDataStore = create<DataState>((set, get) => ({
       return
     }
     set({ teamMembers: get().teamMembers.map((m) => (m.id === id ? (data as TeamMember) : m)) })
+  },
+
+  deleteTeamMember: async (id) => {
+    const { error } = await supabase.from('team_members').delete().eq('id', id)
+    if (error) return { error: error.message }
+    // Mirrors the DB's ON DELETE SET NULL on folders.owner_id / tasks.assigned_user_id —
+    // their projects and tasks aren't deleted, just unassigned.
+    set({
+      teamMembers: get().teamMembers.filter((m) => m.id !== id),
+      folders: get().folders.map((f) => (f.owner_id === id ? { ...f, owner_id: null } : f)),
+      tasks: get().tasks.map((t) => (t.assigned_user_id === id ? { ...t, assigned_user_id: null } : t)),
+    })
+    return { error: null }
   },
 
   loadTaskExtras: async (taskId) => {

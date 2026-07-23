@@ -4,7 +4,6 @@ import { ChevronDown, ChevronRight, FolderKanban, ListChecks, Plus, ExternalLink
 import { useDataStore } from '@/store/dataStore'
 import { getFolderStats } from '@/lib/folderStats'
 import { ProgressBar } from '@/components/ui/ProgressBar'
-import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { TaskListSection, NewTaskListInline } from './TaskListSection'
 import { TaskCard } from '@/components/tasks/TaskCard'
@@ -29,63 +28,71 @@ export function ProjectSection({ folder }: { folder: Folder }) {
   const isEmpty = listsHere.length === 0 && unlistedTasks.length === 0
 
   return (
-    <div className="rounded-2xl border border-white/8 bg-ink-800 shadow-soft">
-      <div className="flex flex-wrap items-center gap-3 px-5 py-4">
-        <button
-          onClick={() => setExpanded((e) => !e)}
-          className="shrink-0 text-ink-400 hover:text-ink-100"
-          aria-label={expanded ? 'Collapse project' : 'Expand project'}
-        >
-          {expanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-        </button>
-        <FolderKanban size={16} className="shrink-0 text-brand-400" />
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold text-ink-50">{folder.name}</p>
-          <p className="text-xs text-ink-400">
-            {stats.active} active · {stats.progress}% complete
-            {stats.overdue > 0 && <span className="text-red-400"> · {stats.overdue} overdue</span>}
-          </p>
+    <div className="flex max-h-[30rem] flex-col overflow-hidden rounded-2xl border border-white/8 bg-ink-800 shadow-soft">
+      <div className="shrink-0 px-4 pb-3 pt-4">
+        <div className="flex items-start gap-2">
+          <button
+            onClick={() => setExpanded((e) => !e)}
+            className="mt-0.5 shrink-0 text-ink-400 hover:text-ink-100"
+            aria-label={expanded ? 'Collapse project' : 'Expand project'}
+          >
+            {expanded ? <ChevronDown size={17} /> : <ChevronRight size={17} />}
+          </button>
+          <FolderKanban size={15} className="mt-0.5 shrink-0 text-brand-400" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-semibold text-ink-50">{folder.name}</p>
+            <p className="truncate text-xs text-ink-400">
+              {stats.active} active · {stats.progress}%{stats.overdue > 0 && <span className="text-red-400"> · {stats.overdue} overdue</span>}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-0.5">
+            <button
+              onClick={() => setCreatingTask(true)}
+              className="rounded-lg p-1.5 text-ink-400 hover:bg-white/8 hover:text-ink-100"
+              title="Add task"
+              aria-label="Add task"
+            >
+              <Plus size={15} />
+            </button>
+            <button
+              onClick={() => navigate(`/projects/${folder.id}`)}
+              className="rounded-lg p-1.5 text-ink-400 hover:bg-white/8 hover:text-ink-100"
+              title="Open full project"
+              aria-label="Open full project"
+            >
+              <ExternalLink size={14} />
+            </button>
+          </div>
         </div>
-        <div className="hidden w-28 shrink-0 sm:block">
-          <ProgressBar value={stats.progress} size="sm" />
-        </div>
-        <Button size="sm" variant="secondary" onClick={() => setCreatingTask(true)}>
-          <Plus size={14} />
-          Task
-        </Button>
-        <button
-          onClick={() => navigate(`/projects/${folder.id}`)}
-          className="shrink-0 rounded-lg p-2 text-ink-400 hover:bg-white/8 hover:text-ink-100"
-          title="Open full project"
-          aria-label="Open full project"
-        >
-          <ExternalLink size={15} />
-        </button>
+        <ProgressBar value={stats.progress} size="sm" className="mt-2.5" />
       </div>
 
       {expanded && (
-        <div className={cx('space-y-3 border-t border-white/8 px-5 py-4', isEmpty && 'pt-4')}>
-          {listsHere.map((list) => (
-            <TaskListSection key={list.id} list={list} tasks={directTasks.filter((t) => t.task_list_id === list.id)} canManage />
-          ))}
+        <>
+          <div className={cx('min-h-0 flex-1 space-y-3 overflow-y-auto border-t border-white/8 px-4 py-3', isEmpty && 'flex items-center')}>
+            {listsHere.map((list) => (
+              <TaskListSection key={list.id} list={list} tasks={directTasks.filter((t) => t.task_list_id === list.id)} canManage />
+            ))}
 
-          {unlistedTasks.length > 0 && (
-            <div className="rounded-2xl border border-white/8 bg-white/5 p-4">
-              <p className="mb-3 text-sm font-semibold text-ink-100">No list</p>
-              <div className="space-y-2">
-                {unlistedTasks.map((t) => (
-                  <TaskCard key={t.id} task={t} onClick={() => setOpenTaskId(t.id)} />
-                ))}
+            {unlistedTasks.length > 0 && (
+              <div className="rounded-2xl border border-white/8 bg-white/5 p-3">
+                <p className="mb-2 text-xs font-semibold text-ink-100">No list</p>
+                <div className="space-y-2">
+                  {unlistedTasks.map((t) => (
+                    <TaskCard key={t.id} task={t} onClick={() => setOpenTaskId(t.id)} />
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {isEmpty && (
-            <EmptyState icon={ListChecks} title="No lists yet" description="Create a list to start organizing this project's tasks." />
-          )}
-
-          <NewTaskListInline folderId={folder.id} />
-        </div>
+            {isEmpty && (
+              <EmptyState icon={ListChecks} title="No lists yet" description="Create a list to start organizing this project's tasks." />
+            )}
+          </div>
+          <div className="shrink-0 border-t border-white/8 px-4 py-3">
+            <NewTaskListInline folderId={folder.id} />
+          </div>
+        </>
       )}
 
       <TaskFormModal open={creatingTask} onClose={() => setCreatingTask(false)} defaultFolderId={folder.id} />

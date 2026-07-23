@@ -6,7 +6,7 @@ import { Select } from '@/components/ui/Field'
 
 export function CalendarPage() {
   const tasks = useDataStore((s) => s.tasks)
-  const teamMembers = useDataStore((s) => s.teamMembers).filter((m) => !m.archived)
+  const teamMembers = useDataStore((s) => s.teamMembers)
   const [memberId, setMemberId] = useState('all')
   const [openTaskId, setOpenTaskId] = useState<string | null>(null)
 

@@ -26,7 +26,7 @@ export function TaskFormModal({
   const updateTask = useDataStore((s) => s.updateTask)
 
   const activeFolders = folders
-  const activeMembers = teamMembers.filter((m) => !m.archived)
+  const activeMembers = teamMembers
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')

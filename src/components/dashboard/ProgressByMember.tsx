@@ -9,7 +9,7 @@ import { calcProgress, isOverdue } from '@/lib/utils'
 
 export function ProgressByMember({ profiles, tasks }: { profiles: TeamMember[]; tasks: Task[] }) {
   const navigate = useNavigate()
-  const active = profiles.filter((p) => !p.archived)
+  const active = profiles
 
   const rows = active
     .map((p) => {
