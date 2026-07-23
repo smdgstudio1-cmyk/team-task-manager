@@ -3,6 +3,7 @@ import { Drawer, DrawerSection } from '@/components/ui/Drawer'
 import { Button } from '@/components/ui/Button'
 import { Input, Select, Textarea, FieldWrap } from '@/components/ui/Field'
 import { useDataStore } from '@/store/dataStore'
+import { toast } from '@/store/toastStore'
 import { TASK_PRIORITIES, TASK_STATUSES, type Task } from '@/lib/types'
 
 export function TaskFormModal({
@@ -87,8 +88,10 @@ export function TaskFormModal({
     }
     if (task) {
       await updateTask(task.id, patch)
+      toast.success('Task updated')
     } else {
       await createTask(patch)
+      toast.success('Task created')
     }
     setSubmitting(false)
     onClose()

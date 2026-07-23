@@ -11,7 +11,9 @@ import { FolderPage } from '@/pages/FolderPage'
 import { OverduePage } from '@/pages/OverduePage'
 import { CompletedPage } from '@/pages/CompletedPage'
 import { CalendarPage } from '@/pages/CalendarPage'
+import { NotificationsPage } from '@/pages/NotificationsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
+import { ToastHost } from '@/components/ui/ToastHost'
 
 function FullScreenLoader() {
   return (
@@ -40,6 +42,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ToastHost />
       <Routes>
         <Route
           path="/login"
@@ -60,6 +63,7 @@ function App() {
           <Route path="/overdue" element={<OverduePage />} />
           <Route path="/completed" element={<CompletedPage />} />
           <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

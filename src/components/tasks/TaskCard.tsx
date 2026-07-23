@@ -18,10 +18,18 @@ export function TaskCard({ task, onClick }: { task: Task; onClick: () => void })
   }
 
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onClick()
+        }
+      }}
       className={cx(
-        'group flex w-full items-center gap-3 rounded-xl border border-ink-200/70 bg-white px-3.5 py-3 text-left transition-all hover:-translate-y-px hover:border-ink-300 hover:shadow-soft',
+        'group flex w-full cursor-pointer items-center gap-3 rounded-xl border border-ink-200/70 bg-white px-3.5 py-3 text-left transition-all hover:-translate-y-px hover:border-ink-300 hover:shadow-soft',
         completed && 'opacity-60'
       )}
     >
@@ -52,6 +60,6 @@ export function TaskCard({ task, onClick }: { task: Task; onClick: () => void })
       </div>
 
       {assignee && <Avatar name={assignee.name} size="sm" className="shrink-0" />}
-    </button>
+    </div>
   )
 }

@@ -3,6 +3,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Input, Textarea, Select, FieldWrap } from '@/components/ui/Field'
 import { useDataStore } from '@/store/dataStore'
+import { toast } from '@/store/toastStore'
 import type { Folder } from '@/lib/types'
 
 export function FolderFormModal({
@@ -41,6 +42,7 @@ export function FolderFormModal({
     setSubmitting(true)
     if (folder) {
       await updateFolder(folder.id, { name: name.trim(), description: description.trim() || null })
+      toast.success('Folder updated')
     } else {
       await createFolder({
         name: name.trim(),
@@ -48,6 +50,7 @@ export function FolderFormModal({
         owner_id: isSubfolder ? ownerId ?? null : owner || null,
         parent_folder_id: parentFolderId ?? null,
       })
+      toast.success(parentFolderId ? 'Subfolder created' : 'Folder created')
     }
     setSubmitting(false)
     onClose()

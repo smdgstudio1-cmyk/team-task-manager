@@ -57,8 +57,57 @@ export interface Task {
   completed_at: string | null
   notes: string | null
   position: number
+  archived: boolean
   created_at: string
   updated_at: string
+}
+
+export interface TaskAttachment {
+  id: string
+  task_id: string
+  file_name: string
+  file_path: string
+  file_size: number
+  mime_type: string | null
+  created_at: string
+}
+
+export interface TaskNote {
+  id: string
+  task_id: string
+  body: string
+  created_at: string
+  updated_at: string
+}
+
+export type TaskActivityType =
+  | 'created'
+  | 'status_changed'
+  | 'deadline_changed'
+  | 'priority_changed'
+  | 'assignment_changed'
+  | 'completed'
+  | 'archived'
+  | 'attachment_added'
+  | 'note_added'
+
+export interface TaskActivity {
+  id: string
+  task_id: string
+  type: TaskActivityType
+  message: string
+  created_at: string
+}
+
+export type NotificationType = 'due_today' | 'due_tomorrow' | 'due_soon' | 'overdue' | 'stale_blocked'
+
+export interface AppNotification {
+  id: string
+  type: NotificationType
+  message: string
+  related_task_id: string | null
+  is_read: boolean
+  created_at: string
 }
 
 export const TASK_STATUSES: TaskStatus[] = [
@@ -70,3 +119,5 @@ export const TASK_STATUSES: TaskStatus[] = [
 ]
 
 export const TASK_PRIORITIES: TaskPriority[] = ['Low', 'Medium', 'High', 'Urgent']
+
+export const MAX_ATTACHMENT_SIZE_BYTES = 20 * 1024 * 1024 // 20MB

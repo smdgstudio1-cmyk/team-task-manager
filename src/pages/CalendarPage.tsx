@@ -12,7 +12,7 @@ export function CalendarPage() {
   const [filters, setFilters] = useState<TaskFilterState>(DEFAULT_FILTERS)
   const [openTaskId, setOpenTaskId] = useState<string | null>(null)
 
-  const filtered = useMemo(() => filterTasks(tasks, filters), [tasks, filters])
+  const filtered = useMemo(() => filterTasks(tasks.filter((t) => !t.archived), filters), [tasks, filters])
 
   return (
     <div className="space-y-4">

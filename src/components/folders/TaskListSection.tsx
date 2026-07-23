@@ -6,6 +6,8 @@ import { TaskFormModal } from '@/components/tasks/TaskFormModal'
 import { TaskDetailModal } from '@/components/tasks/TaskDetailModal'
 import { useDataStore } from '@/store/dataStore'
 import { Input } from '@/components/ui/Field'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { toast } from '@/store/toastStore'
 
 export function TaskListSection({
   list,
@@ -21,13 +23,14 @@ export function TaskListSection({
   const [name, setName] = useState(list.name)
   const [creating, setCreating] = useState(false)
   const [openTaskId, setOpenTaskId] = useState<string | null>(null)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const updateTaskList = useDataStore((s) => s.updateTaskList)
   const deleteTaskList = useDataStore((s) => s.deleteTaskList)
 
-  function handleDelete() {
-    if (confirm(`Delete list "${list.name}"? Tasks inside will move to "No list".`)) {
-      deleteTaskList(list.id)
-    }
+  async function handleDelete() {
+    await deleteTaskList(list.id)
+    toast.success(`List "${list.name}" deleted`)
+    setConfirmingDelete(false)
   }
 
   async function handleRename() {
@@ -65,7 +68,11 @@ export function TaskListSection({
               <button onClick={() => setRenaming(true)} className="rounded p-1.5 text-ink-400 hover:bg-ink-100 hover:text-ink-700" title="Rename list">
                 <Pencil size={14} />
               </button>
-              <button onClick={handleDelete} className="rounded p-1.5 text-ink-400 hover:bg-red-100 hover:text-red-600" title="Delete list">
+              <button
+                onClick={() => setConfirmingDelete(true)}
+                className="rounded p-1.5 text-ink-400 hover:bg-red-100 hover:text-red-600"
+                title="Delete list"
+              >
                 <Trash2 size={14} />
               </button>
             </>
@@ -83,6 +90,16 @@ export function TaskListSection({
 
       <TaskFormModal open={creating} onClose={() => setCreating(false)} defaultFolderId={list.folder_id} defaultTaskListId={list.id} />
       <TaskDetailModal taskId={openTaskId} onClose={() => setOpenTaskId(null)} />
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        onClose={() => setConfirmingDelete(false)}
+        onConfirm={handleDelete}
+        title="Delete this task list?"
+        description={`Tasks inside "${list.name}" will move to "No list" rather than being deleted.`}
+        confirmLabel="Delete list"
+        variant="danger"
+      />
     </div>
   )
 }

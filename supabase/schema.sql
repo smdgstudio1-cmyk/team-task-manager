@@ -1,7 +1,11 @@
--- Lumen Studio — single-admin schema
+-- Lumen Studio — single-admin schema (current target state)
 -- Run this once in your Supabase project's SQL Editor (Database → SQL Editor → New query)
--- for a BRAND NEW project. If you already applied the original multi-user
--- schema, use supabase/migrations/002_single_admin.sql instead.
+-- for a BRAND NEW project only.
+--
+-- If you already have a project running Lumen Studio, do NOT run this file —
+-- apply the incremental migrations in supabase/migrations/ instead, in order:
+--   002_single_admin.sql   (multi-user -> single admin + team_members)
+--   003_task_workspace.sql (attachments, notes, activity, notifications)
 
 create extension if not exists "pgcrypto";
 
@@ -112,6 +116,7 @@ create table public.tasks (
   completed_at timestamptz,
   notes text,
   position int not null default 0,
+  archived boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -121,6 +126,52 @@ create index tasks_task_list_id_idx on public.tasks(task_list_id);
 create index tasks_assigned_user_id_idx on public.tasks(assigned_user_id);
 create index tasks_status_idx on public.tasks(status);
 create index tasks_deadline_idx on public.tasks(deadline);
+create index tasks_archived_idx on public.tasks(archived);
+
+-- ============================================================================
+-- TASK ATTACHMENTS, NOTES, ACTIVITY, NOTIFICATIONS
+-- ============================================================================
+create table public.task_attachments (
+  id uuid primary key default gen_random_uuid(),
+  task_id uuid not null references public.tasks(id) on delete cascade,
+  file_name text not null,
+  file_path text not null,
+  file_size bigint not null,
+  mime_type text,
+  created_at timestamptz not null default now()
+);
+create index task_attachments_task_id_idx on public.task_attachments(task_id);
+
+create table public.task_notes (
+  id uuid primary key default gen_random_uuid(),
+  task_id uuid not null references public.tasks(id) on delete cascade,
+  body text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index task_notes_task_id_idx on public.task_notes(task_id);
+
+create table public.task_activity (
+  id uuid primary key default gen_random_uuid(),
+  task_id uuid not null references public.tasks(id) on delete cascade,
+  type text not null,
+  message text not null,
+  created_at timestamptz not null default now()
+);
+create index task_activity_task_id_idx on public.task_activity(task_id);
+
+-- Single-admin notifications: deadline + staleness alerts only, no user_id
+-- needed since there is only ever one authorized reader.
+create table public.notifications (
+  id uuid primary key default gen_random_uuid(),
+  type text not null check (type in ('due_today', 'due_tomorrow', 'due_soon', 'overdue', 'stale_blocked')),
+  message text not null,
+  related_task_id uuid references public.tasks(id) on delete cascade,
+  is_read boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create index notifications_is_read_idx on public.notifications(is_read);
+create index notifications_related_task_id_idx on public.notifications(related_task_id);
 
 -- ============================================================================
 -- updated_at MAINTENANCE
@@ -142,6 +193,8 @@ create trigger folders_set_updated_at before update on public.folders
 create trigger task_lists_set_updated_at before update on public.task_lists
   for each row execute function public.set_updated_at();
 create trigger tasks_set_updated_at before update on public.tasks
+  for each row execute function public.set_updated_at();
+create trigger task_notes_set_updated_at before update on public.task_notes
   for each row execute function public.set_updated_at();
 
 -- ============================================================================
@@ -167,6 +220,88 @@ create trigger tasks_set_completed_at before insert or update on public.tasks
   for each row execute function public.set_completed_at();
 
 -- ============================================================================
+-- ACTIVITY LOGGING (server-side, so nothing can bypass it)
+-- ============================================================================
+create function public.log_task_activity()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if tg_op = 'INSERT' then
+    insert into public.task_activity (task_id, type, message) values (new.id, 'created', 'Task created');
+    return new;
+  end if;
+
+  if new.status is distinct from old.status then
+    if new.status = 'Completed' then
+      insert into public.task_activity (task_id, type, message) values (new.id, 'completed', 'Marked as completed');
+    else
+      insert into public.task_activity (task_id, type, message) values (new.id, 'status_changed', 'Status changed to "' || new.status || '"');
+    end if;
+  end if;
+
+  if new.deadline is distinct from old.deadline then
+    insert into public.task_activity (task_id, type, message)
+    values (
+      new.id,
+      'deadline_changed',
+      case when new.deadline is null then 'Deadline removed' else 'Deadline set to ' || to_char(new.deadline, 'Mon DD, YYYY') end
+    );
+  end if;
+
+  if new.priority is distinct from old.priority then
+    insert into public.task_activity (task_id, type, message) values (new.id, 'priority_changed', 'Priority changed to ' || new.priority);
+  end if;
+
+  if new.assigned_user_id is distinct from old.assigned_user_id then
+    insert into public.task_activity (task_id, type, message)
+    values (new.id, 'assignment_changed', case when new.assigned_user_id is null then 'Unassigned' else 'Reassigned' end);
+  end if;
+
+  if new.archived is distinct from old.archived and new.archived then
+    insert into public.task_activity (task_id, type, message) values (new.id, 'archived', 'Task archived');
+  end if;
+
+  return new;
+end;
+$$;
+
+create trigger tasks_log_activity after insert or update on public.tasks
+  for each row execute function public.log_task_activity();
+
+create function public.log_attachment_activity()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.task_activity (task_id, type, message) values (new.task_id, 'attachment_added', 'Attached ' || new.file_name);
+  return new;
+end;
+$$;
+
+create trigger task_attachments_log_activity after insert on public.task_attachments
+  for each row execute function public.log_attachment_activity();
+
+create function public.log_note_activity()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.task_activity (task_id, type, message) values (new.task_id, 'note_added', 'Note added');
+  return new;
+end;
+$$;
+
+create trigger task_notes_log_activity after insert on public.task_notes
+  for each row execute function public.log_note_activity();
+
+-- ============================================================================
 -- ROW LEVEL SECURITY
 -- Single rule everywhere: you must be the recorded admin. No exceptions,
 -- no per-owner logic — there is only one person who can ever be signed in.
@@ -176,6 +311,10 @@ alter table public.team_members enable row level security;
 alter table public.folders enable row level security;
 alter table public.task_lists enable row level security;
 alter table public.tasks enable row level security;
+alter table public.task_attachments enable row level security;
+alter table public.task_notes enable row level security;
+alter table public.task_activity enable row level security;
+alter table public.notifications enable row level security;
 
 create policy admin_user_select_self on public.admin_user
   for select using (auth_user_id = auth.uid());
@@ -192,12 +331,35 @@ create policy task_lists_all on public.task_lists
 create policy tasks_all on public.tasks
   for all using (public.is_admin_user()) with check (public.is_admin_user());
 
+create policy task_attachments_all on public.task_attachments
+  for all using (public.is_admin_user()) with check (public.is_admin_user());
+
+create policy task_notes_all on public.task_notes
+  for all using (public.is_admin_user()) with check (public.is_admin_user());
+
+create policy task_activity_all on public.task_activity
+  for all using (public.is_admin_user()) with check (public.is_admin_user());
+
+create policy notifications_all on public.notifications
+  for all using (public.is_admin_user()) with check (public.is_admin_user());
+
+-- ============================================================================
+-- PRIVATE STORAGE BUCKET FOR ATTACHMENTS
+-- ============================================================================
+insert into storage.buckets (id, name, public) values ('task-attachments', 'task-attachments', false);
+
+create policy task_attachments_storage_all on storage.objects
+  for all using (bucket_id = 'task-attachments' and public.is_admin_user())
+  with check (bucket_id = 'task-attachments' and public.is_admin_user());
+
 -- ============================================================================
 -- REALTIME (so the dashboard updates live as you edit tasks/folders)
 -- ============================================================================
 alter publication supabase_realtime add table public.tasks;
 alter publication supabase_realtime add table public.folders;
 alter publication supabase_realtime add table public.team_members;
+alter publication supabase_realtime add table public.notifications;
+alter publication supabase_realtime add table public.task_activity;
 
 -- ============================================================================
 -- IMPORTANT MANUAL STEP (Supabase dashboard, not SQL):

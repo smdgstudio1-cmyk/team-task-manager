@@ -42,7 +42,7 @@ export function TaskExplorer({
   const teamMembers = useDataStore((s) => s.teamMembers)
   const folders = useDataStore((s) => s.folders)
 
-  const filtered = useMemo(() => filterTasks(tasks, filters), [tasks, filters])
+  const filtered = useMemo(() => filterTasks(tasks.filter((t) => !t.archived), filters), [tasks, filters])
 
   return (
     <div className="space-y-4">

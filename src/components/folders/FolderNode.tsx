@@ -4,8 +4,10 @@ import { ChevronDown, ChevronRight, Folder as FolderIcon, FolderPlus, Pencil, Tr
 import type { Folder, Task } from '@/lib/types'
 import { getChildFolders, getFolderStats } from '@/lib/folderStats'
 import { ProgressBar } from '@/components/ui/ProgressBar'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { cx } from '@/lib/utils'
 import { useDataStore } from '@/store/dataStore'
+import { toast } from '@/store/toastStore'
 import { FolderFormModal } from './FolderFormModal'
 
 export function FolderNode({
@@ -22,17 +24,17 @@ export function FolderNode({
   const [expanded, setExpanded] = useState(depth === 0)
   const [addingSubfolder, setAddingSubfolder] = useState(false)
   const [renaming, setRenaming] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const navigate = useNavigate()
   const deleteFolder = useDataStore((s) => s.deleteFolder)
 
   const children = getChildFolders(folder.id, folders)
   const stats = getFolderStats(folder.id, folders, tasks)
 
-  function handleDelete(e: React.MouseEvent) {
-    e.stopPropagation()
-    if (confirm(`Delete "${folder.name}" and everything inside it? This can't be undone.`)) {
-      deleteFolder(folder.id)
-    }
+  async function handleDelete() {
+    await deleteFolder(folder.id)
+    toast.success(`"${folder.name}" deleted`)
+    setConfirmingDelete(false)
   }
 
   return (
@@ -84,7 +86,14 @@ export function FolderNode({
           >
             <Pencil size={14} />
           </button>
-          <button onClick={handleDelete} className="rounded p-1 text-ink-400 hover:bg-red-100 hover:text-red-600" title="Delete">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setConfirmingDelete(true)
+            }}
+            className="rounded p-1 text-ink-400 hover:bg-red-100 hover:text-red-600"
+            title="Delete"
+          >
             <Trash2 size={14} />
           </button>
         </div>
@@ -105,6 +114,16 @@ export function FolderNode({
         parentFolderId={folder.id}
       />
       <FolderFormModal open={renaming} onClose={() => setRenaming(false)} folder={folder} />
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        onClose={() => setConfirmingDelete(false)}
+        onConfirm={handleDelete}
+        title="Delete this folder?"
+        description={`"${folder.name}" and everything inside it — subfolders, task lists, and tasks — will be permanently deleted.`}
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

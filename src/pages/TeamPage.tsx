@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { CreateMemberModal } from '@/components/dashboard/CreateMemberModal'
 import { TaskExplorer } from '@/components/tasks/TaskExplorer'
 import { calcProgress, cx, isOverdue } from '@/lib/utils'
+import { toast } from '@/store/toastStore'
 import type { TeamMember } from '@/lib/types'
 
 export function TeamPage() {
@@ -26,7 +27,7 @@ export function TeamPage() {
   const archived = teamMembers.filter((m) => m.archived)
 
   function renderCard(p: TeamMember) {
-    const mine = tasks.filter((t) => t.assigned_user_id === p.id)
+    const mine = tasks.filter((t) => t.assigned_user_id === p.id && !t.archived)
     const completed = mine.filter((t) => t.status === 'Completed').length
     const overdue = mine.filter((t) => isOverdue(t)).length
     const progress = calcProgress(completed, mine.length)
@@ -65,7 +66,10 @@ export function TeamPage() {
             Edit
           </button>
           <button
-            onClick={() => updateTeamMember(p.id, { archived: !p.archived })}
+            onClick={() => {
+              updateTeamMember(p.id, { archived: !p.archived })
+              toast.success(p.archived ? `${p.name} restored` : `${p.name} archived`)
+            }}
             className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-ink-500 hover:bg-ink-100"
           >
             {p.archived ? <ArchiveRestore size={12} /> : <Archive size={12} />}

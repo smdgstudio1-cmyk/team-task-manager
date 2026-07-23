@@ -6,6 +6,7 @@ import { STATUS_COLORS, cx, formatRelative, isOverdue } from '@/lib/utils'
 import { StatusBadge, PriorityBadge, OverdueBadge } from '@/components/ui/Badge'
 import { Avatar } from '@/components/ui/Avatar'
 import { useDataStore } from '@/store/dataStore'
+import { toast } from '@/store/toastStore'
 
 function KanbanCard({ task, onClick }: { task: Task; onClick: () => void }) {
   const teamMembers = useDataStore((s) => s.teamMembers)
@@ -88,6 +89,7 @@ export function TaskKanbanView({ tasks, onOpenTask }: { tasks: Task[]; onOpenTas
     const task = tasks.find((t) => t.id === active.id)
     if (task && task.status !== newStatus) {
       updateTask(task.id, { status: newStatus })
+      toast.success(`Moved to "${newStatus}"`)
     }
   }
 

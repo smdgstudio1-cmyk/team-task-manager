@@ -3,6 +3,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Input, FieldWrap } from '@/components/ui/Field'
 import { useDataStore } from '@/store/dataStore'
+import { toast } from '@/store/toastStore'
 import type { TeamMember } from '@/lib/types'
 
 export function CreateMemberModal({
@@ -34,6 +35,7 @@ export function CreateMemberModal({
     setError(null)
     if (member) {
       await updateTeamMember(member.id, { name: name.trim(), title: title.trim() || null })
+      toast.success('Team member updated')
     } else {
       const { error } = await createTeamMember({ name: name.trim(), title: title.trim() || null })
       if (error) {
@@ -41,6 +43,7 @@ export function CreateMemberModal({
         setSubmitting(false)
         return
       }
+      toast.success('Team member added')
     }
     setSubmitting(false)
     onClose()

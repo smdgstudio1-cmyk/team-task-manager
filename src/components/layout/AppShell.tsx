@@ -4,15 +4,21 @@ import { X } from 'lucide-react'
 import { SidebarContent } from './Sidebar'
 import { Topbar } from './Topbar'
 import { useDataStore } from '@/store/dataStore'
+import { DashboardSkeleton } from '@/components/ui/Skeleton'
 
 export function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const loadAll = useDataStore((s) => s.loadAll)
   const subscribeRealtime = useDataStore((s) => s.subscribeRealtime)
   const loaded = useDataStore((s) => s.loaded)
+  const generateDeadlineNotifications = useDataStore((s) => s.generateDeadlineNotifications)
 
   useEffect(() => {
-    loadAll().then(() => subscribeRealtime())
+    loadAll().then(() => {
+      subscribeRealtime()
+      generateDeadlineNotifications()
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadAll, subscribeRealtime])
 
   return (
@@ -39,11 +45,7 @@ export function AppShell() {
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar onMenuClick={() => setMobileOpen(true)} />
         <main className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
-          {!loaded ? (
-            <div className="flex h-64 items-center justify-center text-sm text-ink-400">Loading workspace...</div>
-          ) : (
-            <Outlet />
-          )}
+          {!loaded ? <DashboardSkeleton /> : <Outlet />}
         </main>
       </div>
     </div>

@@ -14,7 +14,9 @@ import { TaskExplorer } from '@/components/tasks/TaskExplorer'
 import { TaskCard } from '@/components/tasks/TaskCard'
 import { TaskDetailModal } from '@/components/tasks/TaskDetailModal'
 import { TaskFormModal } from '@/components/tasks/TaskFormModal'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { formatRelative } from '@/lib/utils'
+import { toast } from '@/store/toastStore'
 
 export function FolderPage() {
   const { folderId } = useParams()
@@ -30,6 +32,7 @@ export function FolderPage() {
   const [addingSubfolder, setAddingSubfolder] = useState(false)
   const [creatingTask, setCreatingTask] = useState(false)
   const [openTaskId, setOpenTaskId] = useState<string | null>(null)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   const folder = folders.find((f) => f.id === folderId)
 
@@ -53,7 +56,7 @@ export function FolderPage() {
   const stats = getFolderStats(folder.id, folders, tasks)
   const subfolders = getChildFolders(folder.id, folders)
   const listsHere = taskLists.filter((tl) => tl.folder_id === folder.id)
-  const directTasks = tasks.filter((t) => t.folder_id === folder.id)
+  const directTasks = tasks.filter((t) => t.folder_id === folder.id && !t.archived)
   const unlistedTasks = directTasks.filter((t) => !t.task_list_id)
   const allDescendantTasks = getTasksForFolderTree(folder.id, folders, tasks)
 
@@ -61,11 +64,10 @@ export function FolderPage() {
     .filter((t) => t.deadline && t.status !== 'Completed')
     .sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime())[0]
 
-  function handleDelete() {
-    if (confirm(`Delete "${folder!.name}" and everything inside it? This can't be undone.`)) {
-      deleteFolder(folder!.id)
-      navigate(folder!.parent_folder_id ? `/folders/${folder!.parent_folder_id}` : '/folders')
-    }
+  async function handleDelete() {
+    await deleteFolder(folder!.id)
+    toast.success(`"${folder!.name}" deleted`)
+    navigate(folder!.parent_folder_id ? `/folders/${folder!.parent_folder_id}` : '/folders')
   }
 
   return (
@@ -119,7 +121,13 @@ export function FolderPage() {
             <Button size="sm" variant="ghost" onClick={() => setRenaming(true)} aria-label="Rename folder">
               <Pencil size={14} />
             </Button>
-            <Button size="sm" variant="ghost" onClick={handleDelete} className="text-red-600 hover:bg-red-50" aria-label="Delete folder">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setConfirmingDelete(true)}
+              className="text-red-600 hover:bg-red-50"
+              aria-label="Delete folder"
+            >
               <Trash2 size={14} />
             </Button>
           </div>
@@ -229,6 +237,16 @@ export function FolderPage() {
       />
       <TaskFormModal open={creatingTask} onClose={() => setCreatingTask(false)} defaultFolderId={folder.id} />
       <TaskDetailModal taskId={openTaskId} onClose={() => setOpenTaskId(null)} />
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        onClose={() => setConfirmingDelete(false)}
+        onConfirm={handleDelete}
+        title="Delete this folder?"
+        description={`"${folder.name}" and everything inside it — subfolders, task lists, and tasks — will be permanently deleted.`}
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   )
 }

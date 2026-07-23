@@ -1,5 +1,6 @@
 import { Menu } from 'lucide-react'
 import { GlobalSearch } from './GlobalSearch'
+import { NotificationBell } from './NotificationBell'
 
 export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
   return (
@@ -15,6 +16,8 @@ export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
       <div className="flex-1">
         <GlobalSearch />
       </div>
+
+      <NotificationBell />
     </header>
   )
 }
