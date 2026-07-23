@@ -443,11 +443,21 @@ export const useDataStore = create<DataState>((set, get) => ({
     }
 
     if (toInsert.length === 0) return
-    const { data, error } = await supabase.from('notifications').insert(toInsert).select()
+    // Upsert with ignoreDuplicates rather than a plain insert: the client-side
+    // hasExisting() check above is a fast path, but the real guarantee against
+    // duplicates (e.g. from React StrictMode's double effect invocation, or
+    // two tabs loading at once) is the DB's unique (related_task_id, type)
+    // index — this makes a racing duplicate a no-op instead of a second row.
+    const { data, error } = await supabase
+      .from('notifications')
+      .upsert(toInsert, { onConflict: 'related_task_id,type', ignoreDuplicates: true })
+      .select()
     if (error) {
       console.error(error)
       return
     }
-    set({ notifications: [...(data as AppNotification[]), ...get().notifications] })
+    if (data && data.length > 0) {
+      set({ notifications: [...(data as AppNotification[]), ...get().notifications] })
+    }
   },
 }))

@@ -4,8 +4,9 @@
 --
 -- If you already have a project running Lumen Studio, do NOT run this file —
 -- apply the incremental migrations in supabase/migrations/ instead, in order:
---   002_single_admin.sql   (multi-user -> single admin + team_members)
---   003_task_workspace.sql (attachments, notes, activity, notifications)
+--   002_single_admin.sql        (multi-user -> single admin + team_members)
+--   003_task_workspace.sql      (attachments, notes, activity, notifications)
+--   004_notification_dedupe.sql (unique constraint to prevent duplicate alerts)
 
 create extension if not exists "pgcrypto";
 
@@ -172,6 +173,12 @@ create table public.notifications (
 );
 create index notifications_is_read_idx on public.notifications(is_read);
 create index notifications_related_task_id_idx on public.notifications(related_task_id);
+
+-- A task should only ever have one notification of a given type. Enforced
+-- here (not just client-side) so a race between two loads can't duplicate.
+create unique index notifications_task_type_unique
+  on public.notifications(related_task_id, type)
+  where related_task_id is not null;
 
 -- ============================================================================
 -- updated_at MAINTENANCE
